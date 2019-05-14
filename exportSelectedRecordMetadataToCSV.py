@@ -7,7 +7,7 @@ from collections import Counter
 import urllib3
 import argparse
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -32,7 +32,7 @@ args = parser.parse_args()
 if args.fileName:
     fileName = filePath+args.fileName
 else:
-    fileName = filePath+raw_input('Enter the CSV file of record handles (including \'.csv\'): ')
+    fileName = filePath+input('Enter the CSV file of record handles (including \'.csv\'): ')
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -74,7 +74,7 @@ for itemID in itemList:
 keyListHeader = ['itemID']
 keyListHeader = keyListHeader + keyList
 print keyListHeader
-f=csv.writer(open(filePath+'selectedRecordMetadata.csv', 'wb'))
+f=csv.writer(open(filePath+'selectedRecordMetadata.csv', 'w'))
 f.writerow(keyListHeader)
 
 itemRows = []
@@ -86,7 +86,7 @@ for itemID in itemList:
     for metadataElement in metadata:
         for key in keyListHeader:
             if metadataElement['key'] == key:
-                value = metadataElement['value'].encode('utf-8')+'|'
+                value = metadataElement['value']+'|'
                 try:
                     itemRow[key] = itemRow[key] + value
                 except:

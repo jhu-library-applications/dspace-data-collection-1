@@ -218,7 +218,7 @@ def processItem(dsObject, args):
         if not os.path.isfile(itemPath + dlBitstream['name']):
             response = requests.get(args.baseURL + str(dlBitstream['retrieveLink']), headers=header, cookies=cookies, verify=args.verify, timeout=args.rtimeout)
             response.raise_for_status()  # ensure we notice bad responses
-            file = open(itemPath + dlBitstream['name'], 'wb')
+            file = open(itemPath + dlBitstream['name'], 'w')
             file.write(response.content)
             file.close()
 

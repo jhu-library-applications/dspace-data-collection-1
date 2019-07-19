@@ -1,0 +1,75 @@
+import json
+import requests
+import secrets
+import time
+import csv
+from datetime import datetime
+import urllib3
+import argparse
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print('Editing Production')
+    except ImportError:
+        print('Editing Stage')
+else:
+    print('Editing Stage')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--fileName', help='the metadata CSV file. optional - if not provided, the script will ask for input')
+args = parser.parse_args()
+
+if args.fileName:
+    fileName =args.fileName
+else:
+    fileName = input('Enter the metadata CSV file (including \'.csv\'): ')
+
+
+baseURL = secrets.baseURL
+email = secrets.email
+password = secrets.password
+filePath = secrets.filePath
+verify = secrets.verify
+skippedCollections = secrets.skippedCollections
+
+startTime = time.time()
+data = {'email':email,'password':password}
+header = {'content-type':'application/json','accept':'application/json'}
+session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+cookies = {'JSESSIONID': session}
+headerFileUpload = {'accept':'application/json'}
+cookiesFileUpload = cookies
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+userFullName = status['fullname']
+print('authenticated')
+
+
+f=csv.writer(open(filePath+'collectionDataFromItemList'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+
+items_total = 0
+
+
+with open(fileName) as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        itemID = row['itemID']
+        date = row['value']
+        logInformation = [itemID]
+        print(itemID)
+        itemInfo = requests.get(baseURL+str(itemID)+'/?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
+        print(type(itemInfo))
+        for item in itemInfo:
+            if item == 'parentCollection':
+                parentInfo = itemInfo['parentCollection']
+                for parent in parentInfo:
+                    if parent == 'name':
+                        collectionName = parentInfo['name']
+                        print(collectionName)
+                        f.writerow([collectionName]+[itemID]+[date])
+
+
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)

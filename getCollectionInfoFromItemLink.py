@@ -61,7 +61,7 @@ with open(fileName) as csvfile:
         logInformation = [itemID]
         print(itemID)
         itemInfo = requests.get(baseURL+str(itemID)+'/?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
-        print(type(itemInfo))
+        print(itemInfo)
         for item in itemInfo:
             if item == 'parentCollection':
                 parentInfo = itemInfo['parentCollection']

@@ -1,9 +1,7 @@
-import json
 import requests
 import secrets
 import time
 import csv
-from collections import Counter
 import urllib3
 import argparse
 
@@ -11,13 +9,13 @@ secretsVersion = input('To edit production server, enter the name of the secrets
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Stage'
+        print('Editing Stage')
 else:
-    print 'Editing Stage'
+    print('Editing Stage')
 
-#login info kept in secrets.py file
+# login info kept in secrets.py file
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
@@ -36,17 +34,17 @@ else:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#authentication
+# authentication
 startTime = time.time()
-data = {'email':email,'password':password}
-header = {'content-type':'application/json','accept':'application/json'}
+data = {'email': email, 'password': password}
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept':'application/json'}
+headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
 status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']
-print 'authenticated'
+print('authenticated')
 
 
 handles = []
@@ -69,19 +67,19 @@ for itemID in itemList:
         key = metadataElement['key']
         if key not in keyList and key != 'dc.description.provenance':
             keyList.append(key)
-            print itemID, key
+            print(itemID, key)
 
 keyListHeader = ['itemID']
 keyListHeader = keyListHeader + keyList
-print keyListHeader
-f=csv.writer(open(filePath+'selectedRecordMetadata.csv', 'w'))
+print(keyListHeader)
+f = csv.writer(open(filePath+'selectedRecordMetadata.csv', 'w'))
 f.writerow(keyListHeader)
 
 itemRows = []
 for itemID in itemList:
     itemRow = dict.fromkeys(keyListHeader, '')
     itemRow['itemID'] = itemID
-    print itemRow
+    print(itemRow)
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
     for metadataElement in metadata:
         for key in keyListHeader:
@@ -91,7 +89,7 @@ for itemID in itemList:
                     itemRow[key] = itemRow[key] + value
                 except:
                     itemRow[key] = value
-    print itemRow
+    print(itemRow)
     for key in keyListHeader:
         itemList.append(itemRow[key][:len(itemRow[key])-1])
     f.writerow(itemList)

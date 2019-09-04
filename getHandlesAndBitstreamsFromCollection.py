@@ -27,11 +27,11 @@ skippedCollections = secrets.skippedCollections
 handle = input('Enter handle: ')
 
 startTime = time.time()
-data = {'email':email,'password':password}
-header = {'content-type':'application/json','accept':'application/json'}
+data = {'email': email, 'password': password}
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept':'application/json'}
+headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
 status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']
@@ -50,7 +50,7 @@ while items != []:
         time.sleep(5)
         items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
     items = items.json()
-    for k in range (0, len (items)):
+    for k in range(0, len(items)):
         itemID = items[k]['uuid']
         itemID = '/rest/items/'+itemID
         itemHandle = items[k]['handle']
@@ -58,11 +58,11 @@ while items != []:
     offset = offset + 200
     print(offset)
 
-handle = handle.replace('/','-')
-f=csv.writer(open(filePath+handle+'handlesAndBitstreams.csv', 'w'))
+handle = handle.replace('/', '-')
+f = csv.writer(open(filePath+handle+'handlesAndBitstreams.csv', 'w'))
 f.writerow(['bitstream']+['handle']+['title']+['date']+['description'])
 
-for k,v in itemList.items():
+for k, v in itemList.items():
     itemID = k
     itemHandle = v
     print(itemID)
@@ -70,7 +70,7 @@ for k,v in itemList.items():
     title = ''
     date = ''
     description = ''
-    for i in range (0, len (metadata)):
+    for i in range(0, len(metadata)):
         if metadata[i]['key'] == 'dc.title':
             title = metadata[i]['value']
         if metadata[i]['key'] == 'dc.date.issued':
@@ -81,7 +81,7 @@ for k,v in itemList.items():
     bitstreams = requests.get(baseURL+itemID+'/bitstreams', headers=header, cookies=cookies, verify=verify).json()
     for bitstream in bitstreams:
         fileName = bitstream['name']
-        fileName.replace('.jpg','')
+        fileName.replace('.jpg', '')
         f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
@@ -89,4 +89,4 @@ logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print('Total script run time: ','%d:%02d:%02d' % (h, m, s))
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

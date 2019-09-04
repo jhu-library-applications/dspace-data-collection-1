@@ -1,7 +1,6 @@
 import json
 import requests
 import secrets
-import csv
 import time
 import urllib3
 
@@ -23,14 +22,14 @@ verify = secrets.verify
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-collectionHandle = input('enter collection handle please:' )
+collectionHandle = input('enter collection handle please: ')
 
 
 startTime = time.time()
-data = json.dumps({'email':email,'password':password})
-header = {'content-type':'application/json','accept':'application/json'}
+data = json.dumps({'email': email, 'password': password})
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, data=data).content
-headerAuth = {'content-type':'application/json','accept':'application/json', 'rest-dspace-token':session}
+headerAuth = {'content-type': 'application/json', 'accept': 'application/json', 'rest-dspace-token': session}
 print('authenticated')
 
 
@@ -47,7 +46,7 @@ while items != []:
         time.sleep(5)
         items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth, verify=verify)
     items = items.json()
-    for k in range (0, len (items)):
+    for k in range(0, len(items)):
         itemID = items[k]['uuid']
         itemList.append(itemID)
     offset = offset + 200
@@ -55,13 +54,13 @@ while items != []:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print('Item list creation time: ','%d:%02d:%02d' % (h, m, s))
+print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
 dcElements = []
 for number, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - number
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=headerAuth, verify=verify).json()
-    for l in range (0, len(metadata)):
+    for l in range(0, len(metadata)):
         keys = metadata[l]['key']
         keys = str(keys)
         if keys in dcElements:

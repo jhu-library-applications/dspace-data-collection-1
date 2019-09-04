@@ -19,7 +19,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--collect', help='collectionHandle of the collection to retreive. optional - if not provided, the script will ask for input')
 parser.add_argument('-v', '--value', help='valueSearch of the collection to retreive. optional - if not provided, the script will ask for input')
-parser.add_argument( '-k', '--key', help='keySearch of the collection to retreive. optional - if not provided, the script will ask for input')
+parser.add_argument('-k', '--key', help='keySearch of the collection to retreive. optional - if not provided, the script will ask for input')
 args = parser.parse_args()
 
 if args.collect:
@@ -45,17 +45,18 @@ verify = secrets.verify
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 def findValue(keyName, rowName):
-    for l in range (0, len (metadata)):
+    for l in range(0, len(metadata)):
         if metadata[l]['key'] == keyName:
             itemDict[rowName] = metadata[l]['value'].encode('utf-8')
 
 
 startTime = time.time()
-data = json.dumps({'email':email,'password':password})
-header = {'content-type':'application/json','accept':'application/json'}
+data = json.dumps({'email': email, 'password': password})
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, data=data).content
-headerAuth = {'content-type':'application/json','accept':'application/json', 'rest-dspace-token':session}
+headerAuth = {'content-type': 'application/json', 'accept': 'application/json', 'rest-dspace-token':session}
 print('authenticated')
 
 
@@ -72,7 +73,7 @@ while items != []:
         time.sleep(5)
         items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth, verify=verify)
     items = items.json()
-    for k in range (0, len (items)):
+    for k in range(0, len(items)):
         itemID = items[k]['uuid']
         itemList.append(itemID)
     offset = offset + 200
@@ -80,16 +81,16 @@ while items != []:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print('Item list creation time: ','%d:%02d:%02d' % (h, m, s))
+print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
-f=csv.writer(open(filePath+'recordsWith.csv', 'w'))
+f = csv.writer(open(filePath+'recordsWith.csv', 'w'))
 f.writerow(['itemID']+['uri']+['title']+['formatExtent']+['type']+['descriptionAbstract'])
 for number, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - number
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=headerAuth, verify=verify).json()
     itemDict = {}
-    for l in range (0, len (metadata)):
+    for l in range(0, len(metadata)):
         if metadata[l]['key'] == keySearch and metadata[l]['value'] == valueSearch:
             findValue('dc.identifier.uri', 'uri')
             findValue('dc.title', 'title')

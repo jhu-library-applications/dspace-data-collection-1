@@ -40,7 +40,8 @@ def main():
     missingfiles = 0
     for fileName in fileNames:
         if os.path.isfile(args.dataDir + '/' + fileName):
-            if args.verbose: print('{} is not missing'.format(fileName))
+            if args.verbose:
+                print('{} is not missing'.format(fileName))
             foundfiles += 1
         else:
             print('{} is missing'.format(fileName))

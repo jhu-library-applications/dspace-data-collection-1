@@ -31,11 +31,11 @@ filePathComplete = filePath+'completeValueLists'+datetime.now().strftime('%Y-%m-
 filePathUnique = filePath+'uniqueValueLists'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'
 
 startTime = time.time()
-data = {'email':email,'password':password}
-header = {'content-type':'application/json','accept':'application/json'}
+data = {'email': email, 'password': password}
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept':'application/json'}
+headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
 status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']
@@ -44,10 +44,10 @@ print('authenticated')
 collectionIds = []
 endpoint = baseURL+'/rest/communities'
 communities = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-for i in range (0, len (communities)):
+for i in range(0, len(communities)):
     communityID = communities[i]['uuid']
     collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies, verify=verify).json()
-    for j in range (0, len (collections)):
+    for j in range(0, len(collections)):
         collectionID = collections[j]['uuid']
         if collectionID not in skippedCollections:
             collectionIds.append(collectionID)
@@ -69,22 +69,22 @@ for number, collectionID in enumerate(collectionIds):
         items = response['items']
         for item in items:
             metadata = item['metadata']
-            for i in range (0, len (metadata)):
+            for i in range(0, len(metadata)):
                 if metadata[i]['key'] != 'dc.description.provenance':
                     key = metadata[i]['key']
                     try:
                         value = metadata[i]['value']
                     except:
                         value = ''
-                    for i in range (0, len (metadata)):
+                    for i in range(0, len(metadata)):
                         if metadata[i]['key'] == 'dc.identifier.uri':
                             uri = metadata[i]['value']
-                    if os.path.isfile(filePathComplete+key+'ValuesComplete.csv') == False:
-                        f=csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'w'))
+                    if os.path.isfile(filePathComplete+key+'ValuesComplete.csv') is False:
+                        f = csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'w'))
                         f.writerow(['handle']+['value'])
                         f.writerow([uri]+[value])
                     else:
-                        f=csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'a'))
+                        f = csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'a'))
                         f.writerow([uri]+[value])
         offset = offset + 20
         print(offset)

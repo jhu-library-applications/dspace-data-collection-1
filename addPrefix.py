@@ -1,5 +1,5 @@
 import csv
-f=csv.writer(open('newprefix.csv', 'w'))
+f = csv.writer(open('newprefix.csv', 'w'))
 f.writerow(['fileName'])
 
 with open('metadataWithDates.csv') as csvfile:

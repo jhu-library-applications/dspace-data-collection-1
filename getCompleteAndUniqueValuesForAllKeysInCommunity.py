@@ -30,11 +30,11 @@ skippedCollections = secrets.skippedCollections
 handle = input('Enter community handle: ')
 
 startTime = time.time()
-data = {'email':email,'password':password}
-header = {'content-type':'application/json','accept':'application/json'}
+data = {'email': email, 'password': password}
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept':'application/json'}
+headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
 status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']
@@ -43,14 +43,14 @@ print('authenticated')
 itemList = []
 endpoint = baseURL+'/rest/handle/'+handle
 community = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-communityName = community['name'].replace(' ','')
+communityName = community['name'].replace(' ', '')
 communityID = community['uuid']
 
 filePathComplete = filePath+'completeValueLists'+communityName+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'
 filePathUnique = filePath+'uniqueValueLists'+communityName+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'
 
 collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies, verify=verify).json()
-for j in range (0, len (collections)):
+for j in range(0, len(collections)):
     collectionID = collections[j]['uuid']
     if collectionID not in skippedCollections:
         offset = 0
@@ -61,7 +61,7 @@ for j in range (0, len (collections)):
                 time.sleep(5)
                 items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=100&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
             items = items.json()
-            for k in range (0, len (items)):
+            for k in range(0, len(items)):
                 itemID = items[k]['uuid']
                 itemList.append(itemID)
             offset = offset + 100
@@ -76,25 +76,25 @@ for number, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - number
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-    for l in range (0, len (metadata)):
+    for l in range(0, len(metadata)):
         if metadata[l]['key'] != 'dc.description.provenance':
             key = metadata[l]['key']
             try:
                 value = metadata[l]['value']
             except:
                 value = ''
-            if os.path.isfile(filePathComplete+key+'ValuesComplete.csv') == False:
-                f=csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'w'))
+            if os.path.isfile(filePathComplete+key+'ValuesComplete.csv') is False:
+                f = csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'w'))
                 f.writerow(['itemID']+['value'])
                 f.writerow([itemID]+[value])
             else:
-                f=csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'a'))
+                f = csv.writer(open(filePathComplete+key+'ValuesComplete.csv', 'a'))
                 f.writerow([itemID]+[value])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print('Complete value list creation time: ','%d:%02d:%02d' % (h, m, s))
+print('Complete value list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
 for fileName in os.listdir(filePathComplete):
     reader = csv.DictReader(open(filePathComplete+fileName))
@@ -103,7 +103,7 @@ for fileName in os.listdir(filePathComplete):
     for row in reader:
         valueList.append(row['value'])
     valueListCount = Counter(valueList)
-    f=csv.writer(open(filePathUnique+fileName, 'w'))
+    f = csv.writer(open(filePathUnique+fileName, 'w'))
     f.writerow(['value']+['count'])
     for key, value in valueListCount.items():
         f.writerow([key]+[str(value).zfill(6)])

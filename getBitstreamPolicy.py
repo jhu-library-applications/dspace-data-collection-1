@@ -1,7 +1,5 @@
-import json
 import requests
 import secrets
-import csv
 import time
 import urllib3
 
@@ -25,11 +23,11 @@ verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
-data = {'email':email,'password':password}
-header = {'content-type':'application/json','accept':'application/json'}
+data = {'email': email, 'password': password}
+header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept':'application/json'}
+headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
 status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']

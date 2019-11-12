@@ -82,7 +82,7 @@ for k, v in itemList.items():
     for bitstream in bitstreams:
         fileName = bitstream['name']
         fileName.replace('.jpg', '')
-        f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
+        f.writerow([itemID]+[fileName]+[itemHandle]+[title]+[date]+[description])
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

@@ -24,7 +24,7 @@ filePath = secrets.filePath
 verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
-handle = input('Enter handle: ')
+handleList = []
 
 startTime = time.time()
 data = {'email': email, 'password': password}
@@ -37,52 +37,53 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, v
 userFullName = status['fullname']
 print('authenticated')
 
-endpoint = baseURL+'/rest/handle/'+handle
-collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-collectionID = collection['uuid']
-collectionTitle = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-itemList = {}
-offset = 0
-items = ''
-while items != []:
-    items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
-    while items.status_code != 200:
-        time.sleep(5)
+for handle in handleList:
+    endpoint = baseURL+'/rest/handle/'+handle
+    collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+    collectionID = collection['uuid']
+    collectionTitle = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+    itemList = {}
+    offset = 0
+    items = ''
+    while items != []:
         items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
-    items = items.json()
-    for k in range(0, len(items)):
-        itemID = items[k]['uuid']
-        itemID = '/rest/items/'+itemID
-        itemHandle = items[k]['handle']
-        itemList[itemID] = itemHandle
-    offset = offset + 200
-    print(offset)
+        while items.status_code != 200:
+            time.sleep(5)
+            items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
+        items = items.json()
+        for k in range(0, len(items)):
+            itemID = items[k]['uuid']
+            itemID = '/rest/items/'+itemID
+            itemHandle = items[k]['handle']
+            itemList[itemID] = itemHandle
+        offset = offset + 200
+        print(offset)
 
-handle = handle.replace('/', '-')
-f = csv.writer(open(filePath+handle+'handlesAndBitstreams.csv', 'w'))
-f.writerow(['bitstream']+['handle']+['title']+['date']+['description'])
+    handle = handle.replace('/', '-')
+    f = csv.writer(open(filePath+handle+'handlesAndBitstreams.csv', 'w'))
+    f.writerow(['bitstream']+['handle']+['title']+['date']+['description'])
 
-for k, v in itemList.items():
-    itemID = k
-    itemHandle = v
-    print(itemID)
-    metadata = requests.get(baseURL+itemID+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-    title = ''
-    date = ''
-    description = ''
-    for i in range(0, len(metadata)):
-        if metadata[i]['key'] == 'dc.title':
-            title = metadata[i]['value']
-        if metadata[i]['key'] == 'dc.date.issued':
-            date = metadata[i]['value']
-        if metadata[i]['key'] == 'dc.description.abstract':
-            description = metadata[i]['value']
+    for k, v in itemList.items():
+        itemID = k
+        itemHandle = v
+        print(itemID)
+        metadata = requests.get(baseURL+itemID+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+        title = ''
+        date = ''
+        description = ''
+        for i in range(0, len(metadata)):
+            if metadata[i]['key'] == 'dc.title':
+                title = metadata[i]['value']
+            if metadata[i]['key'] == 'dc.date.issued':
+                date = metadata[i]['value']
+            if metadata[i]['key'] == 'dc.description.abstract':
+                description = metadata[i]['value']
 
-    bitstreams = requests.get(baseURL+itemID+'/bitstreams', headers=header, cookies=cookies, verify=verify).json()
-    for bitstream in bitstreams:
-        fileName = bitstream['name']
-        fileName.replace('.jpg', '')
-        f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
+        bitstreams = requests.get(baseURL+itemID+'/bitstreams?expand=all&limit=300', headers=header, cookies=cookies, verify=verify).json()
+        for bitstream in bitstreams:
+            fileName = bitstream['name']
+            fileName.replace('.jpg', '')
+            f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

@@ -69,3 +69,4 @@ for number, itemID in enumerate(itemList):
             dcElements.append(keys)
 print(len(dcElements))
 print("\'] + [\'".join(dcElements))
+print((dcElements))

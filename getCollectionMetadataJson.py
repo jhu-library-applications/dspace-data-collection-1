@@ -23,7 +23,6 @@ filePath = secrets.filePath
 verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
-handle = input('Enter handle: ')
 
 startTime = time.time()
 data = {'email': email, 'password': password}
@@ -36,6 +35,7 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, v
 userFullName = status['fullname']
 print('authenticated')
 
+handle = input('Enter handle: ')
 endpoint = baseURL+'/rest/handle/'+handle
 collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
 collectionID = collection['uuid']

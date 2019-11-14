@@ -38,8 +38,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 handleList = []
 
-
-#  authentication
+# authentication
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
@@ -86,7 +85,7 @@ for handle in handleList:
     keyListHeader = ['itemID']
     keyListHeader = keyListHeader + keyList
     print(keyListHeader)
-    f = csv.writer(open(filePath+itemHandle.replace('/', '-')+'Metadata.csv', 'w'))
+    f = csv.writer(open(filePath+handle.replace('/', '-')+'Metadata.csv', 'w'))
     f.writerow(keyListHeader)
 
     itemRows = []
@@ -100,7 +99,7 @@ for handle in handleList:
                 if metadataElement['key'] == key:
                     try:
                         value = metadataElement['value']+'|'
-                    except:
+                    except TypeError:
                         pass
                     try:
                         itemRow[key] = itemRow[key] + value

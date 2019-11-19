@@ -17,7 +17,7 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-# login info kept in secrets.py file
+#  login info kept in secrets.py file
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
@@ -75,7 +75,6 @@ for handle in handleList:
 
     keyList = []
     for itemID in itemList:
-        print(baseURL+'/rest/items/'+str(itemID)+'/metadata')
         metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
         for metadataElement in metadata:
             key = metadataElement['key']
@@ -108,6 +107,7 @@ for handle in handleList:
                         itemRow[key] = value
         itemList = []
         for key in keyListHeader:
+            print(itemRow[key][:len(itemRow[key])-1])
             itemList.append(itemRow[key][:len(itemRow[key])-1])
         f.writerow(itemList)
 

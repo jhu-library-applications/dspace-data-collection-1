@@ -36,6 +36,7 @@ skippedCollections = secrets.skippedCollections
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Add list of collection handles.
 handleList = []
 
 # authentication

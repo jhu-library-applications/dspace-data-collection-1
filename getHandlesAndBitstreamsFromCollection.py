@@ -24,6 +24,7 @@ filePath = secrets.filePath
 verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
+# Add list of collection handles.
 handleList = []
 
 startTime = time.time()
@@ -79,7 +80,7 @@ for handle in handleList:
             if metadata[i]['key'] == 'dc.description.abstract':
                 description = metadata[i]['value']
 
-        bitstreams = requests.get(baseURL+itemID+'/bitstreams?expand=all&limit=300', headers=header, cookies=cookies, verify=verify).json()
+        bitstreams = requests.get(baseURL+itemID+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies, verify=verify).json()
         for bitstream in bitstreams:
             fileName = bitstream['name']
             fileName.replace('.jpg', '')

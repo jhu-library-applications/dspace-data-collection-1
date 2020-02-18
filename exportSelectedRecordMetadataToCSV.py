@@ -24,13 +24,13 @@ verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--fileName', help='the CSV file of record handles. optional - if not provided, the script will ask for input')
+parser.add_argument('-f', '--fileName', help='the CSV file of record handles')
 args = parser.parse_args()
 
 if args.fileName:
-    fileName = filePath+args.fileName
+    fileName = args.fileName
 else:
-    fileName = filePath+input('Enter the CSV file of record handles (including \'.csv\'): ')
+    fileName = input('Enter the CSV file of record handles (including \'.csv\'): ')
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -53,6 +53,7 @@ with open(fileName) as csvfile:
     for row in reader:
         handles.append(row['handle'])
 
+
 itemList = []
 for handle in handles:
     endpoint = baseURL+'/rest/handle/'+handle
@@ -60,9 +61,12 @@ for handle in handles:
     itemID = item['uuid']
     itemList.append(itemID)
 
+print(itemList)
+
 keyList = []
 for itemID in itemList:
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+    mURL = baseURL+'/rest/items/'+itemID+'/metadata'
+    metadata = requests.get(mURL, headers=header, cookies=cookies, verify=verify).json()
     for metadataElement in metadata:
         key = metadataElement['key']
         if key not in keyList and key != 'dc.description.provenance':
@@ -72,6 +76,7 @@ for itemID in itemList:
 keyListHeader = ['itemID']
 keyListHeader = keyListHeader + keyList
 print(keyListHeader)
+keyListHeader = sorted(keyListHeader)
 f = csv.writer(open(filePath+'selectedRecordMetadata.csv', 'w'))
 f.writerow(keyListHeader)
 
@@ -79,8 +84,9 @@ itemRows = []
 for itemID in itemList:
     itemRow = dict.fromkeys(keyListHeader, '')
     itemRow['itemID'] = itemID
-    print(itemRow)
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+    print(itemID)
+    mURL = baseURL+'/rest/items/'+itemID+'/metadata'
+    metadata = requests.get(mURL, headers=header, cookies=cookies, verify=verify).json()
     for metadataElement in metadata:
         for key in keyListHeader:
             if metadataElement['key'] == key:
@@ -90,6 +96,18 @@ for itemID in itemList:
                 except:
                     itemRow[key] = value
     print(itemRow)
-    for key in keyListHeader:
-        itemList.append(itemRow[key][:len(itemRow[key])-1])
-    f.writerow(itemList)
+    itemRows.append(itemRow)
+
+for item in itemRows:
+    item = dict(sorted(item.items()))
+    print(item)
+    values = list(item.values())
+    for index, x in enumerate(values):
+        try:
+            last = x[-1]
+            if last == "|":
+                x = x[:-1]
+                values[index] = x
+        except IndexError:
+            pass
+    f.writerows([values])

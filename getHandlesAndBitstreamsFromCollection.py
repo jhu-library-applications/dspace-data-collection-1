@@ -25,7 +25,7 @@ verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 # Add list of collection handles.
-handleList = []
+handleList = ['1774.2/32749', '1774.2/35704', '1774.2/36422', '1774.2/32588', '1774.2/32750', '1774.2/33096', '1774.2/32646', '1774.2/59948', '1774.2/35406', '1774.2/32589', '1774.2/35407', '1774.2/32751', '1774.2/32586', '1774.2/32752']
 
 startTime = time.time()
 data = {'email': email, 'password': password}
@@ -83,7 +83,6 @@ for handle in handleList:
         bitstreams = requests.get(baseURL+itemID+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies, verify=verify).json()
         for bitstream in bitstreams:
             fileName = bitstream['name']
-            fileName.replace('.jpg', '')
             f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)

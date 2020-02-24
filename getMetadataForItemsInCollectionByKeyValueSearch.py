@@ -2,9 +2,11 @@ import json
 import requests
 import secrets
 import csv
+from datetime import datetime
 import time
 import urllib3
 import argparse
+import pandas as pd
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -26,12 +28,10 @@ if args.collect:
     collectionHandle = args.collect
 else:
     collectionHandle = input('Enter handle: ')
-
 if args.value:
     valueSearch = args.value
 else:
     valueSearch = input('what value are you looking for today? ')
-
 if args.key:
     keySearch = args.key
 else:
@@ -49,7 +49,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def findValue(keyName, rowName):
     for l in range(0, len(metadata)):
         if metadata[l]['key'] == keyName:
-            itemDict[rowName] = metadata[l]['value'].encode('utf-8')
+            value = metadata[l]['value']
+            value = str(value)
+            itemDict[rowName] = value
 
 
 startTime = time.time()
@@ -83,21 +85,32 @@ m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
 print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
-f = csv.writer(open(filePath+'recordsWith.csv', 'w'))
-f.writerow(['itemID']+['uri']+['title']+['formatExtent']+['type']+['descriptionAbstract'])
+all_items = []
 for number, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - number
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=headerAuth, verify=verify).json()
     itemDict = {}
+    itemDict['itemID'] = itemID
     for l in range(0, len(metadata)):
         if metadata[l]['key'] == keySearch and metadata[l]['value'] == valueSearch:
             findValue('dc.identifier.uri', 'uri')
             findValue('dc.title', 'title')
-            findValue('dc.format.extent', 'formatExtent')
+            findValue('dc.creator', 'author')
+            findValue('dc.contributor.author', 'author')
+            findValue('dc.date.created', 'dateCreated')
             findValue('dc.type', 'type')
             findValue('dc.description.abstract', 'descriptionAbstract')
-            f.writerow([itemID]+[itemDict['uri']]+[itemDict['title']]+[itemDict['formatExtent']]+[itemDict['type']]+[itemDict['descriptionAbstract']])
+            findValue('thesis.degree.discipline', 'thesisDiscipline')
+            findValue('thesis.degree.level', 'thesisLevel')
+            findValue('thesis.degree.department', 'thesisDepartment')
+            print(itemDict)
+            all_items.append(itemDict)
+
+df = pd.DataFrame.from_dict(all_items)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+df.to_csv(path_or_buf=filePath+'recordsWith_'+dt+'.csv', header='column_names', encoding='utf-8', sep=',', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=headerAuth, verify=verify)
 

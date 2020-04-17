@@ -7,6 +7,8 @@ from collections import Counter
 import urllib3
 import argparse
 
+
+
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
@@ -36,8 +38,16 @@ skippedCollections = secrets.skippedCollections
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+fileName = 'Metadata_Collections.csv'
+
 # Add list of collection handles.
 handleList = []
+with open(fileName) as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        handle = row['Handle']
+        handleList.append(handle)
+
 
 # authentication
 startTime = time.time()
@@ -86,7 +96,7 @@ for handle in handleList:
     keyListHeader = ['itemID']
     keyListHeader = keyListHeader + keyList
     print(keyListHeader)
-    f = csv.writer(open(filePath+handle.replace('/', '-')+'Metadata.csv', 'w'))
+    f = csv.writer(open(handle.replace('/', '-')+'Metadata.csv', 'w'))
     f.writerow(keyListHeader)
 
     itemRows = []

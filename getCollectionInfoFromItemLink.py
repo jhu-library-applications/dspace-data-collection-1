@@ -49,9 +49,6 @@ print('authenticated')
 
 f = csv.writer(open(filePath+'collectionDataFromItemList'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 
-items_total = 0
-
-
 with open(fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
@@ -60,15 +57,9 @@ with open(fileName) as csvfile:
         logInformation = [itemID]
         print(itemID)
         itemInfo = requests.get(baseURL+str(itemID)+'/?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
-        print(itemInfo)
-        for item in itemInfo:
-            if item == 'parentCollection':
-                parentInfo = itemInfo['parentCollection']
-                for parent in parentInfo:
-                    if parent == 'name':
-                        collectionName = parentInfo['name']
-                        print(collectionName)
-                        f.writerow([collectionName]+[itemID]+[date])
+        parentCollection = itemInfo.get('parentCollection')
+        collectionName = parentCollection.get('name')
+        f.writerow([collectionName]+[itemID]+[date])
 
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)

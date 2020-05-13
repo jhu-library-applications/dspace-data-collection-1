@@ -57,9 +57,7 @@ for i in range(0, len(communities)):
         if collectionID not in skippedCollections:
             collectionIds.append(collectionID)
 
-
-f = csv.writer(open('recordsWith'+key+'batchA.csv', 'w'))
-f.writerow(['itemID']+['uri']+[key])
+print('Collection information collected')
 
 itemLinks = []
 for collectionID in collectionIds:

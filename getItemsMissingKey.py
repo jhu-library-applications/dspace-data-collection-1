@@ -1,11 +1,10 @@
-import json
 import requests
 import secrets
 import time
-import csv
 from datetime import datetime
 import urllib3
 import argparse
+import pandas as pd
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -18,13 +17,13 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--key', help='the key to be searched. optional - if not provided, the script will ask for input')
+parser.add_argument('-k', '--searchKey', help='the key to be searched. optional - if not provided, the script will ask for input')
 args = parser.parse_args()
 
-if args.key:
-    key = args.key
+if args.searchKey:
+    searchKey = args.searchKey
 else:
-    key = input('Enter the key to be searched: ')
+    searchKey = input('Enter the key to be searched: ')
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -47,17 +46,6 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, v
 userFullName = status['fullname']
 print('authenticated')
 
-
-def findValue(keyName, rowName):
-    for l in range(0, len(metadata)):
-        if metadata[l]['key'] == keyName:
-            itemDict[rowName] = metadata[l]['value']
-
-
-f = csv.writer(open(filePath+'recordsMissing'+key+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
-f.writerow(['itemID']+['uri']+['collectionName']+['title'])
-
-
 collectionIds = []
 endpoint = baseURL+'/rest/communities'
 communities = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
@@ -69,12 +57,14 @@ for i in range(0, len(communities)):
         if collectionID not in skippedCollections:
             collectionIds.append(collectionID)
 
+print('Collection IDs gathered')
+
 itemLinks = []
 for collectionID in collectionIds:
     offset = 0
     items = ''
     while items != []:
-        endpoint = baseURL+'/rest/filtered-items?query_field[]='+key+'&query_op[]=doesnt_exist&query_val[]=&collSel[]='+collectionID+'&limit=200&offset='+str(offset)+'&expand=parentCollection'
+        endpoint = baseURL+'/rest/filtered-items?query_field[]='+searchKey+'&query_op[]=doesnt_exist&query_val[]=&collSel[]='+collectionID+'&limit=200&offset='+str(offset)+'&expand=parentCollection'
         response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
         items = response['items']
         for item in items:
@@ -87,21 +77,36 @@ for collectionID in collectionIds:
         offset = offset + 200
         print(offset)
 
+print('Item links collected')
+
+all_items = []
 for itemLink in itemLinks:
-    itemInfo = requests.get(baseURL+itemLink+'?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
-    for l in range(0, len(itemInfo)):
-        collectionName = itemInfo['parentCollection']['name']
-    metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
     itemDict = {}
-    for l in range(0, len(metadata)):
-        findValue('dc.identifier.uri', 'uri')
-        findValue('dc.title', 'title')
-        findValue('dc.type', 'type')
-    print(itemDict)
-    try:
-        f.writerow([itemLink]+[itemDict['uri']]+[collectionName]+[itemDict['title']]+[itemDict['type']])
-    except KeyError:
-        f.writerow([itemLink]+[itemDict['uri']]+[collectionName]+[itemDict['title']])
+    itemDict['itemLink'] = itemLink
+    itemInfo = requests.get(baseURL+itemLink+'?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
+    for item in itemInfo:
+        parent = item['parentCollection']
+        collectionName = parent['name']
+        itemDict['collection'] = collectionName
+    metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+    keyList = ['dc.title', 'dc.identifier.uri', 'dc.type']
+    for item in metadata:
+        key = item['key']
+        value = item['value']
+        if key in keyList:
+            if itemDict.get(key) is None:
+                itemDict[key] = value
+            else:
+                oldValue = itemDict[key]
+                newValue = oldValue+'|'+value
+                itemDict[key] = newValue
+    all_items.append(itemDict)
+
+df = pd.DataFrame.from_dict(all_items)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+newFile = 'itemsMissing'+searchKey+'_'+dt+'.csv'
+df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

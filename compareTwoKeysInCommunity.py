@@ -1,9 +1,10 @@
 import requests
 import secrets
-import csv
 import time
 import urllib3
 import argparse
+from datetime import datetime
+import pandas as pd
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -16,19 +17,19 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-1', '--key', help='the first key to be output. optional - if not provided, the script will ask for input')
-parser.add_argument('-2', '--key2', help='the second key to be output. optional - if not provided, the script will ask for input')
-parser.add_argument('-i', '--handle', help='handle of the community to retreive. optional - if not provided, the script will ask for input')
+parser.add_argument('-1', '--searchKey')
+parser.add_argument('-2', '--searchKey2')
+parser.add_argument('-i', '--handle')
 args = parser.parse_args()
 
-if args.key:
-    key = args.key
+if args.searchKey:
+    searchKey = args.searchKey
 else:
-    key = input('Enter first key: ')
-if args.key2:
-    key2 = args.key2
+    searchKey = input('Enter first searchKey: ')
+if args.searchKey2:
+    searchKey2 = args.searchKey2
 else:
-    key2 = input('Enter second key: ')
+    searchKey2 = input('Enter second searchKey: ')
 if args.handle:
     handle = args.handle
 else:
@@ -83,35 +84,35 @@ m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
 print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
-valueList = []
+
+all_items = []
 for number, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - number
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
     metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-    itemTuple = (itemID,)
-    tupleValue1 = ''
-    tupleValue2 = ''
-    for l in range(0, len(metadata)):
-        if metadata[l]['key'] == key:
-            metadataValue = metadata[l]['value']
-            tupleValue1 = metadataValue
-        if metadata[l]['key'] == key2:
-            metadataValue = metadata[l]['value']
-            tupleValue2 = metadataValue
-    itemTuple = itemTuple + (tupleValue1, tupleValue2)
-    valueList.append(itemTuple)
-    print(itemTuple)
-print(valueList)
+    itemDict = {}
+    itemDict['itemID'] = itemID
+    keyList = [searchKey, searchKey2, 'dc.identifier.uri']
+    for item in metadata:
+        key = item['key']
+        value = item['value']
+        if key in keyList:
+            if itemDict.get(key) is None:
+                itemDict[key] = value
+            else:
+                oldValue = itemDict[key]
+                newValue = oldValue+'|'+value
+                itemDict[key] = newValue
+        else:
+            pass
+    all_items.append(itemDict)
 
-elapsedTime = time.time() - startTime
-m, s = divmod(elapsedTime, 60)
-h, m = divmod(m, 60)
-print('Value list creation time: ', '%d:%02d:%02d' % (h, m, s))
-
-f = csv.writer(open(filePath+key+'-'+key2+'Values.csv', 'w'))
-f.writerow(['itemID']+[key]+[key2])
-for i in range(0, len(valueList)):
-    f.writerow([valueList[i][0]]+[valueList[i][1]]+[valueList[i][2]])
+df = pd.DataFrame.from_dict(all_items)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+collection = handle.replace('/', '_')
+newFile = collection+'Comparing'+searchKey+'And'+searchKey2+'_'+dt+'.csv'
+df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

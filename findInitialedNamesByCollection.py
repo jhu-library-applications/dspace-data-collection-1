@@ -63,7 +63,7 @@ while items != []:
         items = response['items']
         for item in items:
             itemLink = item['link']
-            metadata = requests.get(baseURL + itemLink + '/metadata', headers=header, cookies=cookies, verify=verify).json()
+            metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
             for metadata_element in metadata:
                 if metadata_element['key'] == key:
                     individual_name = metadata_element['value']

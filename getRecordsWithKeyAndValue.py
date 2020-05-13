@@ -1,10 +1,10 @@
-import json
 import requests
 import secrets
-import csv
 import time
 import urllib3
 import argparse
+from datetime import datetime
+import pandas as pd
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -17,18 +17,18 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--key', help='the key to be searched. optional - if not provided, the script will ask for input')
-parser.add_argument('-v', '--value', help='the value to be searched. optional - if not provided, the script will ask for input')
+parser.add_argument('-k', '--searchKey', help='the searchKey to be searched. optional - if not provided, the script will ask for input')
+parser.add_argument('-v', '--searchValue', help='the searchValue to be searched. optional - if not provided, the script will ask for input')
 args = parser.parse_args()
 
-if args.key:
-    key = args.key
+if args.searchKey:
+    searchKey = args.searchKey
 else:
-    key = input('Enter the key: ')
-if args.value:
-    value = args.value
+    searchKey = input('Enter the searchKey: ')
+if args.searchValue:
+    searchValue = args.searchValue
 else:
-    value = input('Enter the value: ')
+    searchValue = input('Enter the searchValue: ')
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -50,14 +50,13 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, v
 userFullName = status['fullname']
 print('authenticated')
 
-f = csv.writer(open(filePath+'Key='+key+' Value='+value+'.csv', 'w'))
-f.writerow(['itemID']+['uri']+['key']+['value'])
+
 offset = 0
 recordsEdited = 0
 items = ''
 itemLinks = []
 while items != []:
-    endpoint = baseURL+'/rest/filtered-items?query_field[]='+key+'&query_op[]=equals&query_val[]='+value+'&limit=200&offset='+str(offset)
+    endpoint = baseURL+'/rest/filtered-items?query_field[]='+searchKey+'&query_op[]=equals&query_val[]='+searchValue+'&limit=200&offset='+str(offset)
     print(endpoint)
     response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
     items = response['items']
@@ -67,15 +66,29 @@ while items != []:
         itemLinks.append(itemLink)
     offset = offset + 200
     print(offset)
+
+all_items = []
 for itemLink in itemLinks:
     metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-    for i in range(0, len(metadata)):
-        if metadata[i]['key'] == key and metadata[i]['value'] == value:
-            metadataValue = metadata[i]['value']
-            for i in range(0, len(metadata)):
-                if metadata[i]['key'] == 'dc.identifier.uri':
-                    uri = metadata[i]['value']
-            f.writerow([itemLink]+[uri]+[key]+[metadataValue])
+    itemDict = {}
+    itemDict['itemLink'] = itemLink
+    for item in metadata:
+        key = item['key']
+        value = item['value']
+        if key == searchKey and value == searchValue:
+            itemDict[key] = value
+        elif key == 'dc.identifier.uri':
+            itemDict[key] = value
+        else:
+            pass
+    if itemDict.get(searchKey):
+        all_items.append(itemDict)
+
+df = pd.DataFrame.from_dict(all_items)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+newFile = 'recordsWith'+searchKey+'And'+searchValue+'_'+dt'.csv'
+df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

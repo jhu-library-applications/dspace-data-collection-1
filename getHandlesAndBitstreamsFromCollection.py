@@ -1,9 +1,9 @@
-import json
 import requests
 import secrets
 import time
-import csv
 import urllib3
+from datetime import datetime
+import pandas as pd
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -25,7 +25,7 @@ verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 # Add list of collection handles.
-handleList = ['1774.2/32749', '1774.2/35704', '1774.2/36422', '1774.2/32588', '1774.2/32750', '1774.2/33096', '1774.2/32646', '1774.2/59948', '1774.2/35406', '1774.2/32589', '1774.2/35407', '1774.2/32751', '1774.2/32586', '1774.2/32752']
+handleList = ['1774.2/32749']
 
 startTime = time.time()
 data = {'email': email, 'password': password}
@@ -43,7 +43,7 @@ for handle in handleList:
     collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
     collectionID = collection['uuid']
     collectionTitle = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-    itemList = {}
+    itemIdentifiers = {}
     offset = 0
     items = ''
     while items != []:
@@ -52,38 +52,46 @@ for handle in handleList:
             time.sleep(5)
             items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
         items = items.json()
-        for k in range(0, len(items)):
-            itemID = items[k]['uuid']
-            itemID = '/rest/items/'+itemID
-            itemHandle = items[k]['handle']
-            itemList[itemID] = itemHandle
+        for item in items:
+            itemLink = item['link']
+            itemHandle = item['handle']
+            itemIdentifiers[itemLink] = itemHandle
         offset = offset + 200
         print(offset)
 
-    handle = handle.replace('/', '-')
-    f = csv.writer(open(filePath+handle+'handlesAndBitstreams.csv', 'w'))
-    f.writerow(['bitstream']+['handle']+['title']+['date']+['description'])
+    print('Item links and handles collected')
 
-    for k, v in itemList.items():
-        itemID = k
-        itemHandle = v
-        print(itemID)
-        metadata = requests.get(baseURL+itemID+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-        title = ''
-        date = ''
-        description = ''
-        for i in range(0, len(metadata)):
-            if metadata[i]['key'] == 'dc.title':
-                title = metadata[i]['value']
-            if metadata[i]['key'] == 'dc.date.issued':
-                date = metadata[i]['value']
-            if metadata[i]['key'] == 'dc.description.abstract':
-                description = metadata[i]['value']
-
-        bitstreams = requests.get(baseURL+itemID+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies, verify=verify).json()
+    all_items = []
+    for itemLink, itemHandle in itemIdentifiers.items():
+        itemDict = {}
+        itemDict['itemLink'] = itemLink
+        itemDict['handle'] = itemHandle
+        metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+        keyList = ['dc.title', 'dc.date.issued', 'dc.description.abstract']
+        for item in metadata:
+            key = item['key']
+            value = item['value']
+            if key in keyList:
+                if itemDict.get(key) is None:
+                    itemDict[key] = value
+                else:
+                    oldValue = itemDict[key]
+                    newValue = oldValue+'|'+value
+                    itemDict[key] = newValue
+        bitstreams = requests.get(baseURL+itemLink+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies, verify=verify).json()
+        print(len(bitstreams))
         for bitstream in bitstreams:
-            fileName = bitstream['name']
-            f.writerow([fileName]+[itemHandle]+[title]+[date]+[description])
+            itemDict = itemDict.copy()
+            bitName = bitstream['name']
+            itemDict['bitstream'] = bitName
+            all_items.append(itemDict)
+
+    df = pd.DataFrame.from_dict(all_items)
+    print(df.head(15))
+    dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+    handle = handle.replace('/', '-')
+    newFile = handle+'handlesAndBitstreams'+'_'+dt+'.csv'
+    df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

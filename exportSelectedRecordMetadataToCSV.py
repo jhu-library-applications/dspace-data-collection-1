@@ -1,9 +1,10 @@
 import requests
 import secrets
 import time
-import csv
 import urllib3
 import argparse
+import pandas as pd
+from datetime import datetime
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -46,13 +47,9 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, v
 userFullName = status['fullname']
 print('authenticated')
 
-
-handles = []
-with open(fileName) as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        handles.append(row['handle'])
-
+# Get list of item handles from CSV file.
+df_1 = pd.read_csv(fileName)
+handles = df_1.handle.to_list()
 
 itemList = []
 for handle in handles:
@@ -61,53 +58,36 @@ for handle in handles:
     itemID = item['uuid']
     itemList.append(itemID)
 
-print(itemList)
+print('Item ids collected')
 
-keyList = []
+all_items = []
 for itemID in itemList:
+    itemDict = {}
+    itemDict['itemID'] = itemID
     mURL = baseURL+'/rest/items/'+itemID+'/metadata'
     metadata = requests.get(mURL, headers=header, cookies=cookies, verify=verify).json()
-    for metadataElement in metadata:
-        key = metadataElement['key']
-        if key not in keyList and key != 'dc.description.provenance':
-            keyList.append(key)
-            print(itemID, key)
+    for item in metadata:
+        key = item['key']
+        value = item['value']
+        if itemDict.get(key) is None:
+            itemDict[key] = value
+        else:
+            oldValue = itemDict[key]
+            newValue = oldValue+'|'+value
+            itemDict[key] = newValue
+    all_items.append(itemDict)
 
-keyListHeader = ['itemID']
-keyListHeader = keyListHeader + keyList
-print(keyListHeader)
-keyListHeader = sorted(keyListHeader)
-f = csv.writer(open(filePath+'selectedRecordMetadata.csv', 'w'))
-f.writerow(keyListHeader)
+print('Metadata collected')
 
-itemRows = []
-for itemID in itemList:
-    itemRow = dict.fromkeys(keyListHeader, '')
-    itemRow['itemID'] = itemID
-    print(itemID)
-    mURL = baseURL+'/rest/items/'+itemID+'/metadata'
-    metadata = requests.get(mURL, headers=header, cookies=cookies, verify=verify).json()
-    for metadataElement in metadata:
-        for key in keyListHeader:
-            if metadataElement['key'] == key:
-                value = metadataElement['value']+'|'
-                try:
-                    itemRow[key] = itemRow[key] + value
-                except:
-                    itemRow[key] = value
-    print(itemRow)
-    itemRows.append(itemRow)
+df = pd.DataFrame.from_dict(all_items)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+newFile = 'selectedRecordMetadata'+dt+'.csv'
+df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
-for item in itemRows:
-    item = dict(sorted(item.items()))
-    print(item)
-    values = list(item.values())
-    for index, x in enumerate(values):
-        try:
-            last = x[-1]
-            if last == "|":
-                x = x[:-1]
-                values[index] = x
-        except IndexError:
-            pass
-    f.writerows([values])
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+
+elapsedTime = time.time() - startTime
+m, s = divmod(elapsedTime, 60)
+h, m = divmod(m, 60)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

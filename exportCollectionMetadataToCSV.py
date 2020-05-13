@@ -3,13 +3,11 @@ import requests
 import secrets
 import time
 import csv
-from collections import Counter
+import pandas as pd
 import urllib3
-import argparse
+from datetime import datetime
 
-
-
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter name of secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -27,18 +25,10 @@ filePath = secrets.filePath
 verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-i', '--handle', help='handle of the collection to retreive. optional - if not provided, the script will ask for input')
-# args = parser.parse_args()
-#
-# if args.handle:
-#     handle = args.handle
-# else:
-#     handle = input('Enter collection handle: ')
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-fileName = 'Metadata_Collections.csv'
+fileName = 'collections.csv'
 
 # Add list of collection handles.
 handleList = []
@@ -47,7 +37,6 @@ with open(fileName) as csvfile:
     for row in reader:
         handle = row['Handle']
         handleList.append(handle)
-
 
 # authentication
 startTime = time.time()
@@ -64,10 +53,8 @@ print('authenticated')
 for handle in handleList:
     endpoint = baseURL+'/rest/handle/'+handle
     collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-    print(collection)
     collectionID = collection['uuid']
-    collectionTitle = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
-    itemList = {}
+    itemIdentifiers = {}
     offset = 0
     items = ''
     while items != []:
@@ -80,47 +67,39 @@ for handle in handleList:
             itemID = items[k]['uuid']
             print(itemID)
             itemHandle = items[k]['handle']
-            itemList[itemID] = itemHandle
+            itemIdentifiers[itemID] = itemHandle
         offset = offset + 200
         print(offset)
 
-    keyList = []
-    for itemID in itemList:
-        metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-        for metadataElement in metadata:
-            key = metadataElement['key']
-            if key not in keyList and key != 'dc.description.provenance':
-                keyList.append(key)
-                print(itemID, key)
+    print('Item links and handles collected for '+handle)
 
-    keyListHeader = ['itemID']
-    keyListHeader = keyListHeader + keyList
-    print(keyListHeader)
-    f = csv.writer(open(handle.replace('/', '-')+'Metadata.csv', 'w'))
-    f.writerow(keyListHeader)
-
-    itemRows = []
-    for itemID in itemList:
-        itemRow = dict.fromkeys(keyListHeader, '')
-        itemRow['itemID'] = itemID
-        print(itemID)
+    all_items = []
+    for itemID, itemHandle in itemIdentifiers.items():
+        itemDict = {}
+        itemDict['itemID'] = itemID
+        itemDict['itemHandle'] = itemHandle
         metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-        for metadataElement in metadata:
-            for key in keyListHeader:
-                if metadataElement['key'] == key:
-                    try:
-                        value = metadataElement['value']+'|'
-                    except TypeError:
-                        pass
-                    try:
-                        itemRow[key] = itemRow[key] + value
-                    except:
-                        itemRow[key] = value
-        itemList = []
-        for key in keyListHeader:
-            print(itemRow[key][:len(itemRow[key])-1])
-            itemList.append(itemRow[key][:len(itemRow[key])-1])
-        f.writerow(itemList)
+        for item in metadata:
+            key = item['key']
+            value = item['value']
+            if itemDict.get(key) is None:
+                itemDict[key] = value
+            else:
+                oldValue = itemDict[key]
+                newValue = oldValue+'|'+value
+                itemDict[key] = newValue
+        all_items.append(itemDict)
+
+    print('Metadata collected for '+handle)
+
+    df = pd.DataFrame.from_dict(all_items)
+    print(df.head(15))
+    dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+    handle = handle.replace('/', '-')
+    newFile = handle+'collectionMetadata'+'_'+dt+'.csv'
+    df.to_csv(path_or_buf=newFile, header='column_names', index=False)
+    print('Spreadsheet made for '+handle)
+    print('')
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

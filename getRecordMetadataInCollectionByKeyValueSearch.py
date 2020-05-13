@@ -1,7 +1,6 @@
 import json
 import requests
 import secrets
-import csv
 from datetime import datetime
 import time
 import urllib3
@@ -19,15 +18,15 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-c', '--collect', help='collectionHandle of the collection to retreive. optional - if not provided, the script will ask for input')
-parser.add_argument('-v', '--value', help='valueSearch of the collection to retreive. optional - if not provided, the script will ask for input')
-parser.add_argument('-k', '--key', help='keySearch of the collection to retreive. optional - if not provided, the script will ask for input')
+parser.add_argument('-i', '--handle')
+parser.add_argument('-v', '--value')
+parser.add_argument('-k', '--key')
 args = parser.parse_args()
 
-if args.collect:
-    collectionHandle = args.collect
+if args.handle:
+    handle = args.handle
 else:
-    collectionHandle = input('Enter handle: ')
+    handle = input('Enter handle: ')
 if args.value:
     valueSearch = args.value
 else:
@@ -46,27 +45,21 @@ verify = secrets.verify
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def findValue(keyName, rowName):
-    for l in range(0, len(metadata)):
-        if metadata[l]['key'] == keyName:
-            value = metadata[l]['value']
-            value = str(value)
-            itemDict[rowName] = value
-
-
 startTime = time.time()
 data = json.dumps({'email': email, 'password': password})
 header = {'content-type': 'application/json', 'accept': 'application/json'}
 session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, data=data).content
-headerAuth = {'content-type': 'application/json', 'accept': 'application/json', 'rest-dspace-token':session}
+headerAuth = {'content-type': 'application/json', 'accept': 'application/json', 'rest-dspace-token': session}
 print('authenticated')
 
-
+all_items = []
 itemList = []
-endpoint = baseURL+'/rest/handle/'+collectionHandle
+
+endpoint = baseURL+'/rest/handle/'+handle
 collection = requests.get(endpoint, headers=headerAuth, verify=verify).json()
 collectionID = collection['uuid']
 print(collectionID)
+
 offset = 0
 items = ''
 while items != []:
@@ -85,32 +78,39 @@ m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
 print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 
-all_items = []
-for number, itemID in enumerate(itemList):
-    itemsRemaining = len(itemList) - number
+
+for count, itemID in enumerate(itemList):
+    itemsRemaining = len(itemList) - count
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=headerAuth, verify=verify).json()
+    metadata = requests.get(baseURL+'/rest/items/'+itemID+'/metadata', headers=headerAuth, verify=verify).json()
     itemDict = {}
     itemDict['itemID'] = itemID
-    for l in range(0, len(metadata)):
-        if metadata[l]['key'] == keySearch and metadata[l]['value'] == valueSearch:
-            findValue('dc.identifier.uri', 'uri')
-            findValue('dc.title', 'title')
-            findValue('dc.creator', 'author')
-            findValue('dc.contributor.author', 'author')
-            findValue('dc.date.created', 'dateCreated')
-            findValue('dc.type', 'type')
-            findValue('dc.description.abstract', 'descriptionAbstract')
-            findValue('thesis.degree.discipline', 'thesisDiscipline')
-            findValue('thesis.degree.level', 'thesisLevel')
-            findValue('thesis.degree.department', 'thesisDepartment')
-            print(itemDict)
-            all_items.append(itemDict)
+    for item in metadata:
+        key = item['key']
+        value = item['value']
+        value = str(value)
+        if itemDict.get(key) is None:
+            itemDict[key] = value
+        else:
+            oldValue = itemDict[key]
+            newValue = oldValue+'|'+value
+            itemDict[key] = newValue
+        value = itemDict.get(keySearch)
+        if value:
+            value = value.split('|')
+            for v in value:
+                if v == valueSearch:
+                    all_items.append(itemDict)
+                    break
+                else:
+                    pass
 
 df = pd.DataFrame.from_dict(all_items)
 print(df.head(15))
 dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-df.to_csv(path_or_buf=filePath+'recordsWith_'+dt+'.csv', header='column_names', encoding='utf-8', sep=',', index=False)
+collection = handle.replace('/', '_')
+newFile = collection+'_'+keySearch+'_'+valueSearch+'_'+dt+'.csv'
+df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=headerAuth, verify=verify)
 

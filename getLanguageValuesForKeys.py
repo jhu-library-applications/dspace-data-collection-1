@@ -1,9 +1,9 @@
-import json
 import requests
 import secrets
-import csv
 import time
 import urllib3
+from datetime import datetime
+import pandas as pd
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -62,23 +62,26 @@ h, m = divmod(m, 60)
 print('Item list creation time: ', "%d:%02d:%02d" % (h, m, s))
 
 valueList = []
-for number, itemID in enumerate(itemList):
-    itemsRemaining = len(itemList) - number
-    print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
-    for l in range(0, len(metadata)):
-        metadataKeyLanguagePair = {}
-        metadataKey = metadata[l]['key']
-        metadataLanguage = metadata[l]['language']
-        metadataKeyLanguagePair[metadataKey] = metadataLanguage
-        if metadataKeyLanguagePair not in valueList:
-            valueList.append(metadataKeyLanguagePair)
+for count, itemLink in enumerate(itemList):
+    itemsRemaining = len(itemList) - count
+    print('Items remaining: ', itemsRemaining, 'ItemID: ', itemLink)
+    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata?=expand', headers=header, verify=verify).json()
+    itemDict = {}
+    itemDict['itemID'] = itemID
+    for item in metadata:
+        key = item['key']
+        language = item['language']
+        if itemDict.get(key) is None:
+            itemDict[key] = language
+        else:
+            pass
+    valueList.append(itemDict)
 
-f = csv.writer(open(filePath+'keyLanguageValues.csv', 'w'))
-f.writerow(['key']+['language'])
-for m in range(0, len(valueList)):
-    for k, v in valueList[m].iteritems():
-        f.writerow([k]+[v])
+
+df = pd.DataFrame.from_dict(valueList)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+df.to_csv(path_or_buf=filePath+'languageValuesForKeys_'+dt+'.csv', header='column_names', index=False)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 

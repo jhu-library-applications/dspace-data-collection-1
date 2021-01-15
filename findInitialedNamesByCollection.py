@@ -3,7 +3,6 @@ import secrets
 import csv
 import re
 import time
-import urllib3
 import argparse
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -17,7 +16,7 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--handle', help='handle of the collection to retreive. optional - if not provided, the script will ask for input')
+parser.add_argument('-i', '--handle', help='handle of the collection to retreive')
 args = parser.parse_args()
 
 if args.handle:
@@ -25,27 +24,24 @@ if args.handle:
 else:
     handle = input('Enter collection handle: ')
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
 endpoint = baseURL+'/rest/handle/'+handle
-collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+collection = requests.get(endpoint, headers=header, cookies=cookies).json()
 collectionID = collection['uuid']
 collSels = '&collSel[]=' + collectionID
 
@@ -59,11 +55,11 @@ while items != []:
     for key in keys:
         endpoint = baseURL+'/rest/filtered-items?query_field[]='+key+'&query_op[]=exists&query_val[]='+collSels+'&limit=100&offset='+str(offset)
         print(endpoint)
-        response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+        response = requests.get(endpoint, headers=header, cookies=cookies).json()
         items = response['items']
         for item in items:
             itemLink = item['link']
-            metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+            metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies).json()
             for metadata_element in metadata:
                 if metadata_element['key'] == key:
                     individual_name = metadata_element['value']
@@ -95,7 +91,7 @@ with open('namesInitialsInCollection'+handle+'.csv', 'w') as name_file:
     f.writeheader()
     f.writerows(names)
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

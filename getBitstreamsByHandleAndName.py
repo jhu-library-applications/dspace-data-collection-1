@@ -3,21 +3,17 @@ from datetime import datetime
 import secrets
 import time
 import csv
-import urllib3
 import argparse
 import pandas as pd
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file')
-
 args = parser.parse_args()
 
 if args.file:
     filename = args.file
 else:
     filename = input('Enter the file: ')
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -33,17 +29,15 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
-skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
@@ -54,9 +48,10 @@ with open(filename) as csvfile:
         itemHandle = row['handle']
         bitstreams_names = row['pres_bits']
         endpoint = baseURL+'/rest/handle/'+itemHandle
-        item = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+        item = requests.get(endpoint, headers=header, cookies=cookies).json()
         link = item['link']
-        bitstreams = requests.get(baseURL+link+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies, verify=verify).json()
+        bitsLink = baseURL+link+'/bitstreams?expand=all&limit=1000'
+        bitstreams = requests.get(bitsLink, headers=header, cookies=cookies).json()
         for bitstream in bitstreams:
             bit_uuid = bitstream['uuid']
             fileName = bitstream['name']
@@ -64,7 +59,7 @@ with open(filename) as csvfile:
             if fileName in bitstreams_names:
                 bit_dict.append({'handle': itemHandle, 'bit_uuid': bit_uuid, 'bit_name': fileName, 'size': size})
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 df = pd.DataFrame.from_dict(bit_dict)
 print(df.head(15))

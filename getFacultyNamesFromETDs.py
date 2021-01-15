@@ -1,10 +1,8 @@
-import json
 import requests
 import secrets
 import time
 import csv
 from datetime import datetime
-import urllib3
 import argparse
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -26,30 +24,27 @@ if args.handle:
 else:
     handle = input('Enter community handle: ')
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
 endpoint = baseURL+'/rest/handle/'+handle
-community = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+community = requests.get(endpoint, headers=header, cookies=cookies).json()
 communityID = community['uuid']
-collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies, verify=verify).json()
+collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies).json()
 collSels = ''
 for j in range(0, len(collections)):
     collectionID = collections[j]['uuid']
@@ -71,12 +66,12 @@ items = ''
 while items != []:
     endpoint = baseURL+'/rest/filtered-items?&query_val[]='+collSels+'&limit=200&offset='+str(offset)
     print(endpoint)
-    response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+    response = requests.get(endpoint, headers=header, cookies=cookies).json()
     items = response['items']
     for item in items:
         itemMetadataProcessed = []
         itemLink = item['link']
-        metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+        metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies).json()
         for metadataElement in metadata:
             if metadataElement['key'] in nameFields:
                 facultyName = metadataElement['value']
@@ -88,7 +83,7 @@ while items != []:
 for facultyName in facultyNames:
     f.writerow([facultyName])
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

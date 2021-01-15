@@ -28,15 +28,15 @@ skippedCollections = secrets.skippedCollections
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-fileName = 'collections.csv'
+# fileName = 'collections.csv'
 
 # Add list of collection handles.
-handleList = []
-with open(fileName) as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        handle = row['Handle']
-        handleList.append(handle)
+handleList = ['1774.2/37331']
+# with open(fileName) as csvfile:
+#     reader = csv.DictReader(csvfile)
+#     for row in reader:
+#         handle = row['Handle']
+#         handleList.append(handle)
 
 # authentication
 startTime = time.time()
@@ -88,6 +88,7 @@ for handle in handleList:
                 oldValue = itemDict[key]
                 newValue = oldValue+'|'+value
                 itemDict[key] = newValue
+        print(itemDict)
         all_items.append(itemDict)
 
     print('Metadata collected for '+handle)

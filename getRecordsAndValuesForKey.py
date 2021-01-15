@@ -1,12 +1,9 @@
-import json
 import requests
 import secrets
-import csv
 import time
-import urllib3
 import argparse
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production, enter the secrets file name: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -17,7 +14,7 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--key', help='the key to be searched. optional - if not provided, the script will ask for input')
+parser.add_argument('-k', '--key', help='the key to be searched')
 args = parser.parse_args()
 
 if args.key:
@@ -25,33 +22,31 @@ if args.key:
 else:
     key = input('Enter the key: ')
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
 
 collectionIds = []
 endpoint = baseURL+'/rest/communities'
-communities = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+communities = requests.get(endpoint, headers=header, cookies=cookies).json()
 for i in range(0, len(communities)):
     communityID = communities[i]['uuid']
-    collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies, verify=verify).json()
+    collections = requests.get(baseURL+'/rest/communities/'+str(communityID)+'/collections', headers=header, cookies=cookies).json()
     for j in range(0, len(collections)):
         collectionID = collections[j]['uuid']
         if collectionID not in skippedCollections:
@@ -65,7 +60,7 @@ for collectionID in collectionIds:
     items = ''
     while items != []:
         endpoint = baseURL+'/rest/filtered-items?query_field[]='+key+'&query_op[]=exists&query_val[]=&collSel[]='+collectionID+'&limit=200&offset='+str(offset)
-        response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+        response = requests.get(endpoint, headers=header, cookies=cookies).json()
         items = response['items']
         for item in items:
             itemMetadataProcessed = []
@@ -77,7 +72,7 @@ for collectionID in collectionIds:
 print('Item links collected')
 
 for itemLink in itemLinks:
-    metadata = requests.get(baseURL + itemLink + '/metadata', headers=header, cookies=cookies, verify=verify).json()
+    metadata = requests.get(baseURL + itemLink + '/metadata', headers=header, cookies=cookies).json()
     for l in range(0, len(metadata)):
         if metadata[l]['key'] == key:
             metadataValue = metadata[l]['value']
@@ -86,7 +81,7 @@ for itemLink in itemLinks:
                     uri = metadata[l]['value']
             f.writerow([itemLink] + [uri] + [metadataValue])
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

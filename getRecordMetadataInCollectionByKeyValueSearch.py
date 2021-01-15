@@ -3,11 +3,11 @@ import requests
 import secrets
 from datetime import datetime
 import time
-import urllib3
+
 import argparse
 import pandas as pd
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production, enter the secrets file name: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -40,15 +40,11 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 startTime = time.time()
 data = json.dumps({'email': email, 'password': password})
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, data=data).content
+session = requests.post(baseURL+'/rest/login', headers=header, data=data).content
 headerAuth = {'content-type': 'application/json', 'accept': 'application/json', 'rest-dspace-token': session}
 print('authenticated')
 
@@ -56,17 +52,17 @@ all_items = []
 itemList = []
 
 endpoint = baseURL+'/rest/handle/'+handle
-collection = requests.get(endpoint, headers=headerAuth, verify=verify).json()
+collection = requests.get(endpoint, headers=headerAuth).json()
 collectionID = collection['uuid']
 print(collectionID)
 
 offset = 0
 items = ''
 while items != []:
-    items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth, verify=verify)
+    items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth)
     while items.status_code != 200:
         time.sleep(5)
-        items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth, verify=verify)
+        items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=headerAuth)
     items = items.json()
     for k in range(0, len(items)):
         itemID = items[k]['uuid']
@@ -82,7 +78,7 @@ print('Item list creation time: ', '%d:%02d:%02d' % (h, m, s))
 for count, itemID in enumerate(itemList):
     itemsRemaining = len(itemList) - count
     print('Items remaining: ', itemsRemaining, 'ItemID: ', itemID)
-    metadata = requests.get(baseURL+'/rest/items/'+itemID+'/metadata', headers=headerAuth, verify=verify).json()
+    metadata = requests.get(baseURL+'/rest/items/'+itemID+'/metadata', headers=headerAuth).json()
     itemDict = {}
     itemDict['itemID'] = itemID
     for item in metadata:
@@ -112,7 +108,7 @@ collection = handle.replace('/', '_')
 newFile = collection+'_'+keySearch+'_'+valueSearch+'_'+dt+'.csv'
 df.to_csv(path_or_buf=newFile, header='column_names', index=False)
 
-logout = requests.post(baseURL+'/rest/logout', headers=headerAuth, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=headerAuth)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

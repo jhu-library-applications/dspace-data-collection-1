@@ -1,12 +1,8 @@
-import json
 import requests
 import secrets
 import time
 import csv
 from collections import Counter
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -23,7 +19,6 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 # authentication

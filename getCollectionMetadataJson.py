@@ -2,9 +2,6 @@ import json
 import requests
 import secrets
 import time
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -20,28 +17,27 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
 handle = input('Enter handle: ')
 endpoint = baseURL+'/rest/handle/'+handle
-collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+collection = requests.get(endpoint, headers=header, cookies=cookies).json()
 collectionID = collection['uuid']
-collectionTitle = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+collectionTitle = requests.get(endpoint, headers=header, cookies=cookies).json()
 endpoint = baseURL+'/rest/collections/'+str(collectionID)+'/items'
-output = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+output = requests.get(endpoint, headers=header, cookies=cookies).json()
 
 itemList = []
 for i in range(0, len(output)):
@@ -52,11 +48,11 @@ for i in range(0, len(output)):
 f = open(filePath+handle.replace('/', '-')+'.json', 'w')
 metadataGroup = []
 for itemID in itemList:
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies).json()
     metadataGroup.append(metadata)
 json.dump(metadataGroup, f)
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

@@ -1,9 +1,6 @@
 import requests
 import secrets
 import time
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -19,19 +16,20 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
-skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
-bitstreams = requests.get(baseURL+'/rest/bitstreams/c4500f1d-90a7-494d-a12c-549cba050a91'+'/policy', headers=header, cookies=cookies, verify=verify).json()
+bitID = ''
+bitLink = baseURL+'/rest/bitstreams/'+bitID+'/policy'
+
+bitstreams = requests.get(bitLink, headers=header, cookies=cookies).json()
 print(bitstreams)

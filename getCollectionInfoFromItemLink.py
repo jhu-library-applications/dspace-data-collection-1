@@ -3,10 +3,7 @@ import secrets
 import time
 import csv
 from datetime import datetime
-import urllib3
 import argparse
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -19,11 +16,11 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--fileName', help='the metadata CSV file. optional - if not provided, the script will ask for input')
+parser.add_argument('-f', '--fileName', help='the filename of metadata CSV')
 args = parser.parse_args()
 
 if args.fileName:
-    fileName =args.fileName
+    fileName = args.fileName
 else:
     fileName = input('Enter the metadata CSV file (including \'.csv\'): ')
 
@@ -32,17 +29,16 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
@@ -56,10 +52,10 @@ with open(fileName) as csvfile:
         date = row['value']
         logInformation = [itemID]
         print(itemID)
-        itemInfo = requests.get(baseURL+str(itemID)+'/?expand=parentCollection', headers=header, cookies=cookies, verify=verify).json()
+        itemInfo = requests.get(baseURL+str(itemID)+'/?expand=parentCollection', headers=header, cookies=cookies).json()
         parentCollection = itemInfo.get('parentCollection')
         collectionName = parentCollection.get('name')
         f.writerow([collectionName]+[itemID]+[date])
 
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)

@@ -1,4 +1,3 @@
-import json
 import requests
 import secrets
 import time
@@ -22,7 +21,6 @@ baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-verify = secrets.verify
 skippedCollections = secrets.skippedCollections
 
 
@@ -42,26 +40,26 @@ handleList = ['1774.2/37331']
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
 for handle in handleList:
     endpoint = baseURL+'/rest/handle/'+handle
-    collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
+    collection = requests.get(endpoint, headers=header, cookies=cookies).json()
     collectionID = collection['uuid']
     itemIdentifiers = {}
     offset = 0
     items = ''
     while items != []:
-        items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
+        items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies)
         while items.status_code != 200:
             time.sleep(5)
-            items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies, verify=verify)
+            items = requests.get(baseURL+'/rest/collections/'+str(collectionID)+'/items?limit=200&offset='+str(offset), headers=header, cookies=cookies)
         items = items.json()
         for k in range(0, len(items)):
             itemID = items[k]['uuid']
@@ -78,7 +76,7 @@ for handle in handleList:
         itemDict = {}
         itemDict['itemID'] = itemID
         itemDict['itemHandle'] = itemHandle
-        metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+        metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies).json()
         for item in metadata:
             key = item['key']
             value = item['value']
@@ -102,7 +100,7 @@ for handle in handleList:
     print('Spreadsheet made for '+handle)
     print('')
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

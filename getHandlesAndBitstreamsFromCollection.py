@@ -21,7 +21,7 @@ filePath = secrets.filePath
 skippedCollections = secrets.skippedCollections
 
 # Add list of collection handles.
-handleList = ['1774.2/63248']
+handleList = ['1774.2/46193', '1774.2/37331', '1774.2/37595']
 
 startTime = time.time()
 data = {'email': email, 'password': password}

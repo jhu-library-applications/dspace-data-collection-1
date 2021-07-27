@@ -44,46 +44,39 @@ status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).j
 userFullName = status['fullname']
 print('authenticated')
 
-
-directory = ''
 df_1 = pd.read_csv(fileName)
 handleList = df_1.handle.to_list()
 
-bit_dict = []
+allItems = []
 for handle in handleList:
-    itemHandle = handle
-    print(itemHandle)
-    endpoint = baseURL+'/rest/handle/'+itemHandle
+    print(handle)
+    endpoint = baseURL+'/rest/handle/'+handle
     item = requests.get(endpoint, headers=header, cookies=cookies).json()
     link = item['link']
     title = item['name']
-    itemInfo = requests.get(baseURL+link+'/?expand=parentCollection', headers=header, cookies=cookies).json()
-    parentCollection = itemInfo.get('parentCollection')
-    collName = parentCollection.get('name')
     bitsLink = baseURL+link+'/bitstreams?expand=all&limit=1000'
     bitstreams = requests.get(bitsLink, headers=header, cookies=cookies).json()
     print(len(bitstreams))
     for bitstream in bitstreams:
+        itemDict = {}
         bit_uuid = bitstream['uuid']
         fileName = bitstream['name']
         size = bitstream['sizeBytes']
-        data = requests.get(baseURL+link+'/bitstreams/'+bit_uuid+'/retrieve', stream=True, headers=header, cookies=cookies)
-        local_filename = os.path.join(directory, "v2_"+fileName)
-        f = open(local_filename, 'wb')
-        f.write(data.content)
-        f.close()
-        itemDict = {'link': link, 'handle': itemHandle,
-                    'collName': collName, 'title': title}
-        bitDict = {'bit_uuid': bit_uuid, 'bit_name': fileName, 'size': size}
-        itemDict.update(bitDict)
-        bit_dict.append(itemDict)
+        itemDict['item_link'] = link
+        itemDict['item_handle'] = handle
+        itemDict['title'] = title
+        itemDict['bit_uuid'] = bit_uuid
+        itemDict['file_name'] = fileName
+        print(fileName)
+        itemDict['size'] = size
+        allItems.append(itemDict)
 
 logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
 
-df = pd.DataFrame.from_dict(bit_dict)
+df = pd.DataFrame.from_dict(allItems)
 print(df.head(15))
 dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-df.to_csv('bitstreamsByItemHandle_'+dt+'.csv', header='column_names', index=False)
+df.to_csv('bitstreamsByItemHandle_'+dt+'.csv', index=False)
 
 
 elapsedTime = time.time() - startTime

@@ -57,19 +57,19 @@ This script finds names with initials in DSpace collections based on regular exp
 #### [getKeyNamesForCollection.py](getKeyNamesForCollection.py)
 This script prints all the dcElements being used in a specific DSpace collection.
 
-#### [getMetadataForItemsInCollectionByKeyValueSearch.py](getMetadataForItemsInCollectionByKeyValueSearch.py)
+#### [getRecordMetadatanCollectionByKeyValueSearch.py](getRecordMetadatanCollectionByKeyValueSearch.py)
 This script produces a csv with the metadata for items from a specific DSpace collection that have a certain key/value pair.
 
-#### [getRecordsAndValuesForKey.py](getRecordsAndValuesForKey.py)
+#### [findRecordsAndValuesForKey.py](findRecordsAndValuesForKey.py)
 Based on user input, extracts the ID and URI for all items in the repository with the specified key, as well as the value of the specified key, to a CSV file.
 
-#### [getRecordsAndValuesForKeyInCollection.py](getRecordsAndValuesForKeyInCollection.py)
+#### [findRecordsAndValuesForKeyInCollection.py](findRecordsAndValuesForKeyInCollection.py)
 Based on user input, extracts the ID and URI for all items in the specified collection with the specified key, as well as the value of the specified key, to a CSV file.
 
-#### [getRecordsWithKeyAndValue.py](getRecordsWithKeyAndValue.py)
+#### [findRecordsWithKeyAndValue.py](getRecordsWithKeyAndValue.py)
 Based on user input, extracts the ID and URI for all items in the repository with the specified key-value pair to a CSV file.
 
-#### [identifyItemsMissingKeyInCommunity.py](identifyItemsMissingKeyInCommunity.py)
+#### [findItemsMissingKeyInCommunity.py](findItemsMissingKeyInCommunity.py)
 Based on user input, extracts the IDs of items from a specified community that do not have the specified key.
 
 #### [metadataCollectionsKeysMatrix.py](metadataCollectionsKeysMatrix.py)

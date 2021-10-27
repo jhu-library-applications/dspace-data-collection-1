@@ -67,7 +67,6 @@ for handle in handleList:
         itemDict['title'] = title
         itemDict['bit_uuid'] = bit_uuid
         itemDict['file_name'] = fileName
-        print(fileName)
         itemDict['size'] = size
         allItems.append(itemDict)
 

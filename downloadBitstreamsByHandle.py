@@ -32,12 +32,13 @@ userFullName = status['fullname']
 print('authenticated')
 
 fileLocation = ''
-itemHandle = ''
+itemHandle = '1774.2/32595'
 endpoint = baseURL+'/rest/handle/'+itemHandle
 item = requests.get(endpoint, headers=header, cookies=cookies).json()
 link = item['link']
 bitstreams = requests.get(baseURL+link+'/bitstreams?expand=all&limit=1000', headers=header, cookies=cookies).json()
 for bitstream in bitstreams:
+    print(bitstream)
     fileName = bitstream['name']
     retrieveLink = bitstream['retrieveLink']
     print(retrieveLink)

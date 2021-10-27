@@ -1,7 +1,6 @@
 import requests
 import secrets
 import time
-import csv
 import pandas as pd
 import urllib3
 from datetime import datetime

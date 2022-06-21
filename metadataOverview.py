@@ -25,11 +25,11 @@ skippedCollections = secrets.skippedCollections
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
+session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
 headerFileUpload = {'accept': 'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
 userFullName = status['fullname']
 print('authenticated')
 
@@ -86,7 +86,7 @@ for concat in itemList:
     f.writerow([communityID]+[collectionID]+[itemID])
     concat = concat[:concat.find('|')]
     print(itemID)
-    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies, verify=verify).json()
+    metadata = requests.get(baseURL+'/rest/items/'+str(itemID)+'/metadata', headers=header, cookies=cookies).json()
     for i in range(0, len(metadata)):
         key = metadata[i]['key']
         keyCount.append(key)
@@ -118,9 +118,9 @@ for concat in keyList:
     communityID = concat[:concat.find(':')]
     collectionID = concat[concat.find(':')+1:concat.find('|')]
     key = concat[concat.rfind('|')+1:]
-    additionalDataCommunity = requests.get(baseURL+'/rest/communities/'+str(communityID), headers=header, cookies=cookies, verify=verify).json()
+    additionalDataCommunity = requests.get(baseURL+'/rest/communities/'+str(communityID), headers=header, cookies=cookies).json()
     communityName = additionalDataCommunity['name']
-    additionalDataCollection = requests.get(baseURL+'/rest/collections/'+str(collectionID), headers=header, cookies=cookies, verify=verify).json()
+    additionalDataCollection = requests.get(baseURL+'/rest/collections/'+str(collectionID), headers=header, cookies=cookies).json()
     collectionName = additionalDataCollection['name']
     collectionHandle = additionalDataCollection['handle']
     fullName = communityName+' - '+collectionName
@@ -131,4 +131,4 @@ m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
 print("%d:%02d:%02d" % (h, m, s))
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)

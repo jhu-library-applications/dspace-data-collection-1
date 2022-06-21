@@ -19,16 +19,13 @@ else:
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
-
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # fileName = 'collections.csv'
 
 # Add list of collection handles.
-handleList = ['1774.2/37331']
+handleList = ['1774.2/2085']
 # with open(fileName) as csvfile:
 #     reader = csv.DictReader(csvfile)
 #     for row in reader:

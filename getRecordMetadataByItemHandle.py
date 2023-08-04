@@ -1,6 +1,6 @@
 import json
 import requests
-import secrets
+import secret
 from datetime import datetime
 import time
 import argparse
@@ -28,7 +28,7 @@ else:
 
 baseURL = secrets.baseURL
 email = secrets.email
-password = secrets.password
+password = secret.password
 filePath = secrets.filePath
 
 startTime = time.time()

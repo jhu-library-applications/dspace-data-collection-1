@@ -1,8 +1,10 @@
+import json
 import requests
 import secret
 import csv
 import re
 import time
+import urllib3
 import argparse
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -16,7 +18,7 @@ else:
     print('Editing Stage')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--handle', help='handle of the collection to retreive')
+parser.add_argument('-i', '--handle', help='handle of the collection to retreive. optional - if not provided, the script will ask for input')
 args = parser.parse_args()
 
 if args.handle:
@@ -24,24 +26,27 @@ if args.handle:
 else:
     handle = input('Enter collection handle: ')
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 baseURL = secret.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
-filePath = secrets.filePath
+filePath = secret.filePath
+verify = secrets.verify
 
 startTime = time.time()
-data = {'email': email, 'password': password}
-header = {'content-type': 'application/json', 'accept': 'application/json'}
-session = requests.post(baseURL+'/rest/login', headers=header, params=data).cookies['JSESSIONID']
+data = {'email':email,'password':password}
+header = {'content-type':'application/json','accept':'application/json'}
+session = requests.post(baseURL+'/rest/login', headers=header, verify=verify, params=data).cookies['JSESSIONID']
 cookies = {'JSESSIONID': session}
-headerFileUpload = {'accept': 'application/json'}
+headerFileUpload = {'accept':'application/json'}
 cookiesFileUpload = cookies
-status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies).json()
+status = requests.get(baseURL+'/rest/status', headers=header, cookies=cookies, verify=verify).json()
 userFullName = status['fullname']
 print('authenticated')
 
 endpoint = baseURL+'/rest/handle/'+handle
-collection = requests.get(endpoint, headers=header, cookies=cookies).json()
+collection = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
 collectionID = collection['uuid']
 collSels = '&collSel[]=' + collectionID
 
@@ -55,11 +60,11 @@ while items != []:
     for key in keys:
         endpoint = baseURL+'/rest/filtered-items?query_field[]='+key+'&query_op[]=exists&query_val[]='+collSels+'&limit=100&offset='+str(offset)
         print(endpoint)
-        response = requests.get(endpoint, headers=header, cookies=cookies).json()
+        response = requests.get(endpoint, headers=header, cookies=cookies, verify=verify).json()
         items = response['items']
         for item in items:
             itemLink = item['link']
-            metadata = requests.get(baseURL+itemLink+'/metadata', headers=header, cookies=cookies).json()
+            metadata = requests.get(baseURL + itemLink + '/metadata', headers=header, cookies=cookies, verify=verify).json()
             for metadata_element in metadata:
                 if metadata_element['key'] == key:
                     individual_name = metadata_element['value']
@@ -74,11 +79,11 @@ while items != []:
                             elif contains_parentheses:
                                 continue
                             elif contains_initials:
-                                name = {'link': uri, 'name': individual_name, 'key': key}
-                                names.append(name)
+                                    name = {'link' : uri, 'name' : individual_name, 'key' : key}
+                                    names.append(name)
                             else:
                                 continue
-            name = {'link': '', 'name': '', 'key': ''}
+            name = {'link' : '', 'name' : '', 'key' : ''}
             names.append(name)
     offset = offset + 200
     print(offset)
@@ -91,7 +96,7 @@ with open('namesInitialsInCollection'+handle+'.csv', 'w') as name_file:
     f.writeheader()
     f.writerows(names)
 
-logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies)
+logout = requests.post(baseURL+'/rest/logout', headers=header, cookies=cookies, verify=verify)
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

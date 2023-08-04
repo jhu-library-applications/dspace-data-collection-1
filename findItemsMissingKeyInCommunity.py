@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import csv
 from datetime import datetime
@@ -29,9 +29,9 @@ if args.handle:
 else:
     handle = input('Enter collection handle: ')
 
-baseURL = secrets.baseURL
+baseURL = secret.baseURL
 email = secrets.email
-password = secrets.password
+password = secret.password
 filePath = secrets.filePath
 skippedCollections = secrets.skippedCollections
 

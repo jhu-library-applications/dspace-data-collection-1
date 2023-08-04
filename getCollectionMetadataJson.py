@@ -1,6 +1,6 @@
 import json
 import requests
-import secrets
+import secret
 import time
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -14,10 +14,10 @@ else:
     print('Editing Stage')
 
 baseURL = secrets.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 
 startTime = time.time()

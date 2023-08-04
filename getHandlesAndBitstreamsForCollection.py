@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 from datetime import datetime
 import pandas as pd
@@ -14,11 +14,11 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
 filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 # Add list of collection handles.
 handleList = ['1774.2/46193', '1774.2/37331', '1774.2/37595']

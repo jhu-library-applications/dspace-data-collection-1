@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import argparse
 
@@ -24,9 +24,9 @@ else:
 
 
 baseURL = secrets.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
-filePath = secrets.filePath
+filePath = secret.filePath
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()

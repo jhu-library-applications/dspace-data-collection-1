@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import csv
 import time
 import os.path
@@ -18,10 +18,10 @@ else:
     print('Editing Stage')
 
 baseURL = secrets.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 handle = input('Enter community handle: ')
 

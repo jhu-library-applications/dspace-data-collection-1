@@ -1,6 +1,6 @@
 
 import requests
-import secrets
+import secret
 import csv
 import time
 

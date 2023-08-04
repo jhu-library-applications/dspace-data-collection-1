@@ -1,6 +1,6 @@
 import json
 import requests
-import secrets
+import secret
 from datetime import datetime
 import time
 import argparse
@@ -26,10 +26,10 @@ else:
     fileName = input('Enter file of handles (including \'.csv\'): ')
 
 
-baseURL = secrets.baseURL
-email = secrets.email
+baseURL = secret.baseURL
+email = secret.email
 password = secrets.password
-filePath = secrets.filePath
+filePath = secret.filePath
 
 startTime = time.time()
 data = json.dumps({'email': email, 'password': password})

@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import csv
 import time
 
@@ -11,11 +11,11 @@ if secretsVersion != '':
     except ImportError:
         print('Editing Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
 filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

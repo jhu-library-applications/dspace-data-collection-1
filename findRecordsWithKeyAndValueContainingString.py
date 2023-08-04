@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import csv
 import time
 import argparse
@@ -30,10 +30,10 @@ else:
 
 
 baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

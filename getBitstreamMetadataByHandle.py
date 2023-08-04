@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-import secrets
+import secret
 import time
 import os
 import argparse
@@ -27,9 +27,9 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
 filePath = secrets.filePath
 
 

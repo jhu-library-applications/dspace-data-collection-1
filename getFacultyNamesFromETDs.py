@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import csv
 from datetime import datetime
@@ -26,8 +26,8 @@ else:
 
 baseURL = secrets.baseURL
 email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
+password = secret.password
+filePath = secret.filePath
 skippedCollections = secrets.skippedCollections
 
 startTime = time.time()

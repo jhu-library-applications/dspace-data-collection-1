@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import csv
 import time
 import os.path
@@ -19,7 +19,7 @@ else:
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password
-filePath = secrets.filePath
+filePath = secret.filePath
 skippedCollections = secrets.skippedCollections
 
 filePathComplete = filePath+'completeValueLists'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'

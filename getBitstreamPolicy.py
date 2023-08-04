@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -12,8 +12,8 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
+baseURL = secret.baseURL
+email = secret.email
 password = secrets.password
 filePath = secrets.filePath
 

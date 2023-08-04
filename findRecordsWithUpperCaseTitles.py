@@ -1,7 +1,7 @@
 # find uppercase titles
 
 import requests
-import secrets
+import secret
 import csv
 import time
 import argparse
@@ -25,11 +25,11 @@ if args.key:
 else:
     key = input('Enter the key: ')
 
-baseURL = secrets.baseURL
+baseURL = secret.baseURL
 email = secrets.email
 password = secrets.password
 filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

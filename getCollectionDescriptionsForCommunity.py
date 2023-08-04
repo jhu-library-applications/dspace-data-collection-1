@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import csv
 import time
 import urllib3
@@ -25,11 +25,11 @@ else:
     handle = input('Enter the handle: ')
 
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

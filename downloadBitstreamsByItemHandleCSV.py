@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-import secrets
+import secret
 import time
 import os
 import argparse
@@ -28,8 +28,8 @@ else:
     print('Editing Stage')
 
 baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+email = secret.email
+password = secret.password
 filePath = secrets.filePath
 
 

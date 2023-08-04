@@ -1,6 +1,6 @@
 import json
 import requests
-import secrets
+import secret
 from datetime import datetime
 import time
 
@@ -37,7 +37,7 @@ else:
     keySearch = input('what key will this value be contained in?(Please format as dc.key) : ')
 
 baseURL = secrets.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
 filePath = secrets.filePath
 

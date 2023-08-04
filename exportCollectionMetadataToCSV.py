@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import pandas as pd
 import urllib3
@@ -15,10 +15,10 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-#  login info kept in secrets.py file
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+#  login info kept in secret.py file
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

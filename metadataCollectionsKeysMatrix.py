@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import csv
 
@@ -13,12 +13,12 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-# login info kept in secrets.py file
-baseURL = secrets.baseURL
+# login info kept in secret.py file
+baseURL = secret.baseURL
 email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 # authentication
 startTime = time.time()

@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 from datetime import datetime
 import pandas as pd

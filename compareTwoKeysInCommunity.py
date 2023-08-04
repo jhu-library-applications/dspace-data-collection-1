@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import argparse
 from datetime import datetime
@@ -36,7 +36,7 @@ else:
 
 baseURL = secrets.baseURL
 email = secrets.email
-password = secrets.password
+password = secret.password
 filePath = secrets.filePath
 skippedCollections = secrets.skippedCollections
 

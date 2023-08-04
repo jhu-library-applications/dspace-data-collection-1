@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-import secrets
+import secret
 import time
 import csv
 import argparse

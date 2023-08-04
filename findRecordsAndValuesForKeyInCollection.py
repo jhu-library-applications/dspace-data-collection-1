@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import argparse
 from datetime import datetime
@@ -30,10 +30,10 @@ else:
     handle = input('Enter collection handle: ')
 
 baseURL = secrets.baseURL
-email = secrets.email
+email = secret.email
 password = secrets.password
 filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

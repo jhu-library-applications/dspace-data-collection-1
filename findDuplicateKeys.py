@@ -1,6 +1,6 @@
 import json
 import requests
-import secrets
+import secret
 import time
 import csv
 import argparse
@@ -25,11 +25,11 @@ else:
     key = input('Enter the key: ')
 
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 searchString = "\""+key+"\""
 

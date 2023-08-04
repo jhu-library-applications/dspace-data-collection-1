@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import pandas as pd
 import urllib3
@@ -15,7 +15,7 @@ if secretsVersion != '':
 else:
     print('Editing Stage')
 
-#  login info kept in secrets.py file
+#  login info kept in secret.py file
 baseURL = secrets.baseURL
 email = secrets.email
 password = secrets.password

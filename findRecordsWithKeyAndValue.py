@@ -1,5 +1,5 @@
 import requests
-import secrets
+import secret
 import time
 import argparse
 from datetime import datetime
@@ -29,11 +29,11 @@ if args.searchValue:
 else:
     searchValue = input('Enter the searchValue: ')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

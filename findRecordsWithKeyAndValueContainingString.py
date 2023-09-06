@@ -4,15 +4,15 @@ import csv
 import time
 import argparse
 
-secretsVersion = input('To edit production, enter the secrets filename: ')
-if secretsVersion != '':
+secretVersion = input('To edit production, enter the secret filename: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-k', '--key', help='the key to be searched. optional - if not provided, the script will ask for input')
@@ -29,7 +29,7 @@ else:
     value = input('Enter the value: ')
 
 
-baseURL = secrets.baseURL
+baseURL = secret.baseURL
 email = secret.email
 password = secret.password
 filePath = secret.filePath

@@ -5,27 +5,22 @@ import pandas as pd
 import urllib3
 from datetime import datetime
 
-secretsVersion = input('To edit production server, enter name of secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter name of secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
-
-#  login info kept in secret.py file
-baseURL = secret.baseURL
-email = secret.email
-password = secret.password
+    print('Using Stage')
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # fileName = 'collections.csv'
 
 # Add list of collection handles.
-handleList = ['1774.2/2085']
+handleList = ['1774.2/59439']
 # with open(fileName) as csvfile:
 #     reader = csv.DictReader(csvfile)
 #     for row in reader:
@@ -33,6 +28,11 @@ handleList = ['1774.2/2085']
 #         handleList.append(handle)
 
 # authentication
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+
 startTime = time.time()
 data = {'email': email, 'password': password}
 header = {'content-type': 'application/json', 'accept': 'application/json'}

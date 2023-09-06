@@ -6,15 +6,15 @@ import time
 import argparse
 import pandas as pd
 
-secretsVersion = input('To edit production, enter the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production, enter the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--fileName')
@@ -28,7 +28,7 @@ else:
 
 baseURL = secret.baseURL
 email = secret.email
-password = secrets.password
+password = secret.password
 filePath = secret.filePath
 
 startTime = time.time()

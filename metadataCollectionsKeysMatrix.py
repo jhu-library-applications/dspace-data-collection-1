@@ -3,19 +3,19 @@ import secret
 import time
 import csv
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter the name of the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 # login info kept in secret.py file
 baseURL = secret.baseURL
-email = secrets.email
+email = secret.email
 password = secret.password
 filePath = secret.filePath
 skippedCollections = secret.skippedCollections

@@ -6,21 +6,21 @@ import os.path
 from collections import Counter
 from datetime import datetime
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter the name of the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
 filePath = secret.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 filePathComplete = filePath+'completeValueLists'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'
 filePathUnique = filePath+'uniqueValueLists'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'/'

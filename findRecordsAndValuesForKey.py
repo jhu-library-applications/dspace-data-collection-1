@@ -3,15 +3,15 @@ import secret
 import time
 import argparse
 
-secretsVersion = input('To edit production, enter the secrets file name: ')
-if secretsVersion != '':
+secretVersion = input('To edit production, enter the secret file name: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-k', '--key', help='the key to be searched')
@@ -23,11 +23,11 @@ else:
     key = input('Enter the key: ')
 
 
-baseURL = secrets.baseURL
+baseURL = secret.baseURL
 email = secret.email
-password = secrets.password
+password = secret.password
 filePath = secret.filePath
-skippedCollections = secrets.skippedCollections
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

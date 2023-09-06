@@ -7,15 +7,15 @@ import time
 import argparse
 import pandas as pd
 
-secretsVersion = input('To edit production, enter the secrets file name: ')
-if secretsVersion != '':
+secretVersion = input('To edit production, enter the secret file name: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--handle')
@@ -36,10 +36,10 @@ if args.key:
 else:
     keySearch = input('what key will this value be contained in?(Please format as dc.key) : ')
 
-baseURL = secrets.baseURL
+baseURL = secret.baseURL
 email = secret.email
-password = secrets.password
-filePath = secrets.filePath
+password = secret.password
+filePath = secret.filePath
 
 startTime = time.time()
 data = json.dumps({'email': email, 'password': password})

@@ -4,20 +4,20 @@ import time
 from datetime import datetime
 import pandas as pd
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter the name of the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 baseURL = secret.baseURL
 email = secret.email
 password = secret.password
-filePath = secrets.filePath
+filePath = secret.filePath
 skippedCollections = secret.skippedCollections
 
 # Add list of collection handles.

@@ -2,7 +2,7 @@
 
 **Note**: These scripts were updated in 05/2018 for the new authentication method used by DSpace 6.x
 
-All of these scripts require a secrets.py file in the same directory that must contain the following text:
+All of these scripts require a secret.py file in the same directory that must contain the following text:
 ```
         baseURL='https://dspace.myuni.edu'
         email='dspace_user@.myuni.edu'
@@ -11,9 +11,9 @@ All of these scripts require a secrets.py file in the same directory that must c
         handlePrefix = 'http://dspace.myuni.edu/handle/'
         skippedCollections = A list of the 'uuid' of any collections that you wish the script to skip. (e.g. ['45794375-6640-4efe-848e-082e60bae375'])
 ```
-The 'filePath' is directory into which output files will be written and 'handlePrefix' may or may not vary from your DSpace URL depending on your configuration. This secrets.py file will be ignored according to the repository's .gitignore file so that DSpace login details will not be inadvertently exposed through GitHub.
+The 'filePath' is directory into which output files will be written and 'handlePrefix' may or may not vary from your DSpace URL depending on your configuration. This secret.py file will be ignored according to the repository's .gitignore file so that DSpace login details will not be inadvertently exposed through GitHub.
 
-If you are using both a development server and a production server, you can create a separate secrets.py file with a different name (e.g. secretsProd.py) and containing the production server information. When running each of these scripts, you will be prompted to enter the file name (e.g 'secretsProd' without '.py') of an alternate secrets file. If you skip the prompt or incorrectly type the file name, the scripts will default to the information in the secrets.py file. This ensures that you will only access the production server if you really intend to.
+If you are using both a development server and a production server, you can create a separate secret.py file with a different name (e.g. secretProd.py) and containing the production server information. When running each of these scripts, you will be prompted to enter the file name (e.g 'secretProd' without '.py') of an alternate secret file. If you skip the prompt or incorrectly type the file name, the scripts will default to the information in the secret.py file. This ensures that you will only access the production server if you really intend to.
 
 #### [compareTwoKeysInCommunity.py](compareTwoKeysInCommunity.py)
 Based on user input, extracts the values of two specified keys from a specified community to a CSV file for comparison.
@@ -25,7 +25,7 @@ Based on [mjanowiecki's](https://github.com/mjanowiecki) [findInitialedNamesByCo
 Based a CSV of item handles, extracts all metadata (except 'dc.description.provenance' values) from the selected items to a CSV file.
 
 #### [findBogusUris.py](findBogusUris.py)
-Extracts the item ID and the value of the key 'dc.identifier.uri' to a CSV file when the value does not begin with the handlePrefix specified in the secrets.py file.
+Extracts the item ID and the value of the key 'dc.identifier.uri' to a CSV file when the value does not begin with the handlePrefix specified in the secret.py file.
 
 #### [findDuplicateKeys.py](findDuplicateKeys.py)
 Based on user input, extracts item IDs to a CSV file where there are multiple instances of the specified key in the item metadata.

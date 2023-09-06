@@ -7,15 +7,15 @@ import time
 import urllib3
 import argparse
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter the name of the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--handle', help='handle of the collection to retreive. optional - if not provided, the script will ask for input')
@@ -30,9 +30,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 baseURL = secret.baseURL
 email = secret.email
-password = secrets.password
+password = secret.password
 filePath = secret.filePath
-verify = secrets.verify
+verify = secret.verify
 
 startTime = time.time()
 data = {'email':email,'password':password}

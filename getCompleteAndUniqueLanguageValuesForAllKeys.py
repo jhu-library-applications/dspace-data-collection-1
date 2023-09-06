@@ -4,21 +4,21 @@ import time
 from datetime import datetime
 import pandas as pd
 
-secretsVersion = input('To edit production, enter the secrets file name: ')
-if secretsVersion != '':
+secretVersion = input('To edit production, enter the secret file name: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
-baseURL = secrets.baseURL
-email = secrets.email
-password = secrets.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+baseURL = secret.baseURL
+email = secret.email
+password = secret.password
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

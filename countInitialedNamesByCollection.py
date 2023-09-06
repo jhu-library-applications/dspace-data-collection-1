@@ -4,20 +4,20 @@ import csv
 import re
 import time
 
-secretsVersion = input('To edit production server, enter secrets file name: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter secret file name: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 baseURL = secret.baseURL
 email = secret.email
-password = secrets.password
-filePath = secrets.filePath
+password = secret.password
+filePath = secret.filePath
 skippedCollections = secret.skippedCollections
 
 startTime = time.time()

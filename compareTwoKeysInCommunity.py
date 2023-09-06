@@ -5,15 +5,15 @@ import argparse
 from datetime import datetime
 import pandas as pd
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
-if secretsVersion != '':
+secretVersion = input('To edit production server, enter the name of the secret file: ')
+if secretVersion != '':
     try:
-        secrets = __import__(secretsVersion)
-        print('Editing Production')
+        secret = __import__(secretVersion)
+        print('Using Production')
     except ImportError:
-        print('Editing Stage')
+        print('Using Stage')
 else:
-    print('Editing Stage')
+    print('Using Stage')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-1', '--searchKey')
@@ -34,11 +34,11 @@ if args.handle:
 else:
     handle = input('Enter community handle: ')
 
-baseURL = secrets.baseURL
-email = secrets.email
+baseURL = secret.baseURL
+email = secret.email
 password = secret.password
-filePath = secrets.filePath
-skippedCollections = secrets.skippedCollections
+filePath = secret.filePath
+skippedCollections = secret.skippedCollections
 
 startTime = time.time()
 data = {'email': email, 'password': password}

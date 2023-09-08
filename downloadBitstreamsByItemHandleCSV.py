@@ -5,6 +5,7 @@ import time
 import os
 import argparse
 import pandas as pd
+import urllib
 
 
 parser = argparse.ArgumentParser()
@@ -66,12 +67,12 @@ for handle in handleList:
     for bitstream in bitstreams:
         bit_uuid = bitstream['uuid']
         fileName = bitstream['name']
+        print(fileName)
         size = bitstream['sizeBytes']
-        data = requests.get(baseURL+link+'/bitstreams/'+bit_uuid+'/retrieve', stream=True, headers=header, cookies=cookies)
-        local_filename = os.path.join(directory, "v2_"+fileName)
-        f = open(local_filename, 'wb')
-        f.write(data.content)
-        f.close()
+        retrieveLink = bitstream['retrieveLink']
+        retrieveLink = baseURL + retrieveLink
+        local_filename = os.path.join(directory, fileName)
+        urllib.request.urlretrieve(retrieveLink, local_filename)
         itemDict = {'link': link, 'handle': itemHandle,
                     'collName': collName, 'title': title}
         bitDict = {'bit_uuid': bit_uuid, 'bit_name': fileName, 'size': size}
